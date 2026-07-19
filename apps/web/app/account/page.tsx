@@ -7,6 +7,14 @@ import "./account.css";
 
 type Mode = "loading" | "signin" | "signup" | "confirm" | "profile";
 
+const PW_RULES: [string, (p: string) => boolean][] = [
+  ["At least 8 characters", (p) => p.length >= 8],
+  ["A lowercase letter", (p) => /[a-z]/.test(p)],
+  ["An uppercase letter", (p) => /[A-Z]/.test(p)],
+  ["A number", (p) => /[0-9]/.test(p)],
+  ["A symbol (!@#$%…)", (p) => /[^A-Za-z0-9\s]/.test(p)],
+];
+
 interface Profile {
   handle: string | null;
   instagram: string | null;
@@ -170,9 +178,27 @@ export default function AccountPage() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </label>
+          {mode === "signup" && (
+            <ul className="pw-rules" aria-label="Password requirements">
+              {PW_RULES.map(([label, test]) => {
+                const ok = test(password);
+                const cls = ok ? "ok" : password ? "bad" : "";
+                return (
+                  <li key={label} className={cls}>
+                    <span aria-hidden="true">{ok ? "✓" : "○"}</span> {label}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
           <button
             className="check-btn"
-            disabled={busy || !email || !password}
+            disabled={
+              busy ||
+              !email ||
+              !password ||
+              (mode === "signup" && !PW_RULES.every(([, test]) => test(password)))
+            }
             onClick={mode === "signup" ? doSignUp : doSignIn}
           >
             {mode === "signup" ? "Create account" : "Sign in"}
