@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "sst dev",
+    "predeploy": "rm -rf apps/web/.next apps/web/.open-next",
     "deploy": "sst deploy",
     "typecheck": "pnpm -r exec tsc --noEmit"
   },
