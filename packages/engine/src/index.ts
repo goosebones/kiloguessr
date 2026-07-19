@@ -1,5 +1,9 @@
-// @kiloguessr/engine — framework-agnostic game logic (M1).
-// Will hold: seeded card generation, grading (incl. the 2/7 ⇒ .5 shorthand),
-// endurance clock simulation, and sprint scoring — shared by web and Lambda.
+// @kiloguessr/engine — framework-agnostic game logic shared by web and Lambda.
 
-export const ENGINE_VERSION = "0.0.1";
+export const ENGINE_VERSION = "0.1.0";
+
+export * from "./plates";
+export * from "./rng";
+export * from "./cards";
+export * from "./grading";
+export * from "./modes";

@@ -6,6 +6,14 @@
   --ink: #1a1c20;
   --muted: #5d636c;
   --accent: #c43229;
+  --steel: #a7adb5;
+  --steel-dark: #7e848d;
+  --good: #1a1c20;
+  --bad: #c43229;
+  --good-glow: rgba(26, 28, 32, 0.35);
+  --bad-glow: rgba(196, 50, 41, 0.45);
+  --chip-active-bg: #1a1c20;
+  --chip-active-ink: #f8f9f7;
   --display: "Avenir Next Condensed", "Arial Narrow", "Helvetica Neue", system-ui, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --body: system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -18,6 +26,14 @@
     --ink: #ecedef;
     --muted: #979ea8;
     --accent: #d5453b;
+    --steel: #878e97;
+    --steel-dark: #666d76;
+    --good: #ecedef;
+    --bad: #d5453b;
+    --good-glow: rgba(255, 255, 255, 0.5);
+    --bad-glow: rgba(213, 69, 59, 0.55);
+    --chip-active-bg: #ecedef;
+    --chip-active-ink: #14161a;
   }
 }
 
