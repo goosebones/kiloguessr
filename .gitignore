@@ -1,0 +1,9 @@
+node_modules/
+.next/
+.open-next/
+.sst/
+sst-env.d.ts
+.env
+.env.*
+.DS_Store
+*.tsbuildinfo

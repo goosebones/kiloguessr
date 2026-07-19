@@ -1,0 +1,13 @@
+{
+  "name": "kiloguessr",
+  "private": true,
+  "scripts": {
+    "dev": "sst dev",
+    "deploy": "sst deploy",
+    "typecheck": "pnpm -r exec tsc --noEmit"
+  },
+  "devDependencies": {
+    "sst": "^3.17.0",
+    "typescript": "^5.5.4"
+  }
+}
