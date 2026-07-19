@@ -1,0 +1,71 @@
+.account .card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 22px;
+  max-width: 420px;
+  width: 100%;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.account .tab-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.account .seg-tab {
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.account .seg-tab[aria-pressed="true"] {
+  background: var(--chip-active-bg);
+  color: var(--chip-active-ink);
+  border-color: var(--chip-active-bg);
+}
+.account label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.account label input {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: var(--mono);
+  font-size: 15px;
+  color: var(--ink);
+  outline: none;
+}
+.account label input:focus {
+  border-color: var(--ink);
+}
+.account .btn-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.account-note {
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+.account-error {
+  text-align: center;
+  color: var(--bad);
+  font-size: 14px;
+  font-weight: 600;
+}

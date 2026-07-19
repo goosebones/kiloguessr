@@ -1,0 +1,15 @@
+{
+  "name": "@kiloguessr/functions",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.700.0",
+    "@aws-sdk/lib-dynamodb": "^3.700.0",
+    "sst": "^3.17.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.145",
+    "typescript": "^5.5.4"
+  }
+}

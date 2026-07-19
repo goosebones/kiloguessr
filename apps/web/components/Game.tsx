@@ -351,6 +351,9 @@ export default function Game() {
           </h1>
         </div>
         <div className="stats" aria-label="Session stats">
+          <a className="link-btn" href="/account" style={{ alignSelf: "center" }}>
+            Account
+          </a>
           <div className="stat"><b>{stats.correct}/{stats.attempts}</b><span>Score</span></div>
           <div className="stat"><b>{acc}</b><span>Acc</span></div>
           <div className="stat"><b>{stats.streak}</b><span>Streak</span></div>
