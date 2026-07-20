@@ -29,7 +29,9 @@ describe("generateRunCards", () => {
   it("is deterministic for a seed and sized per mode", () => {
     expect(generateRunCards("endurance-read", SEED)).toEqual(cards);
     expect(cards).toHaveLength(cardsPerRun("endurance-read"));
-    expect(generateRunCards("sprint-read", SEED)).toHaveLength(10);
+    expect(generateRunCards("sprint-read", SEED)).toHaveLength(
+      cardsPerRun("sprint-read"),
+    );
   });
 
   it("uses the ranked settings", () => {
@@ -97,19 +99,40 @@ describe("scoreRun — sprint", () => {
     ms,
   });
 
-  it("adds a 10s penalty per miss", () => {
+  it("scores the time taken to land ten good lifts", () => {
     const all = Array.from({ length: 10 }, (_, i) => sRight(i));
     const clean = scoreRun("sprint-read", SEED, all);
     expect(clean.valid).toBe(true);
     expect(clean.score).toBe(20000);
-
-    const oneMiss = [...all.slice(0, 9), { answer: "1", ms: 2000 }];
-    expect(scoreRun("sprint-read", SEED, oneMiss).score).toBe(30000);
+    expect(clean.correct).toBe(10);
+    expect(clean.attempts).toBe(10);
   });
 
-  it("requires exactly ten cards", () => {
+  it("charges a miss only the time it cost", () => {
+    // miss card 0, then ten correct — 11 cards of 2s each
+    const answers: SubmittedAnswer[] = [{ answer: "1", ms: 2000 }];
+    for (let i = 1; i <= 10; i++) answers.push(sRight(i));
+    const r = scoreRun("sprint-read", SEED, answers);
+    expect(r.valid).toBe(true);
+    expect(r.score).toBe(22000);
+    expect(r.correct).toBe(10);
+    expect(r.attempts).toBe(11);
+    expect(r.accuracy).toBeCloseTo(10 / 11);
+  });
+
+  it("stops the clock on the tenth good lift", () => {
+    const answers = Array.from({ length: 10 }, (_, i) => sRight(i));
+    answers.push(sRight(10, 9999)); // an extra answer after the target
+    const r = scoreRun("sprint-read", SEED, answers);
+    expect(r.score).toBe(20000);
+    expect(r.attempts).toBe(10);
+  });
+
+  it("won't post a time without ten good lifts", () => {
     const short = Array.from({ length: 9 }, (_, i) => sRight(i));
-    expect(scoreRun("sprint-read", SEED, short).valid).toBe(false);
+    const r = scoreRun("sprint-read", SEED, short);
+    expect(r.valid).toBe(false);
+    expect(r.reason).toMatch(/good lifts/i);
   });
 });
 

@@ -27,5 +27,7 @@ export const RANKED_SETTINGS: GameSettings = {
   max: 375,
 };
 
-export const SPRINT_CARDS = 10;
-export const SPRINT_MISS_PENALTY_SEC = 10;
+/** Good lifts needed to finish a sprint — the clock is the score. */
+export const SPRINT_TARGET = 10;
+/** Card surplus issued for a sprint, since misses need replacements. */
+export const SPRINT_MAX_CARDS = 60;

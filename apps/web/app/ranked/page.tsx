@@ -7,8 +7,7 @@ import {
   RANKED_ENDURANCE,
   RANKED_MODES,
   RANKED_SETTINGS,
-  SPRINT_CARDS,
-  SPRINT_MISS_PENALTY_SEC,
+  SPRINT_TARGET,
   answersMatch,
   fmt,
   formatScore,
@@ -92,6 +91,7 @@ export default function RankedPage() {
   bindsRef.current = binds;
 
   const answers = useRef<Answer[]>([]);
+  const hitsRef = useRef(0);
   const cardShownAt = useRef(0);
   const clockRef = useRef(E.startSec * 1000);
   const idxRef = useRef(0);
@@ -171,6 +171,7 @@ export default function RankedPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Couldn't start a run.");
       answers.current = [];
+      hitsRef.current = 0;
       idxRef.current = 0;
       platesRef.current = [];
       clockRef.current = isEndurance(m) ? E.startSec * 1000 : 0;
@@ -228,13 +229,21 @@ export default function RankedPage() {
     if (isEndurance(m)) {
       clockRef.current += ok ? E.gainSec * 1000 : -E.lossSec * 1000;
     }
-    if (ok) setHits((h) => h + 1);
+    if (ok) {
+      hitsRef.current += 1;
+      setHits(hitsRef.current);
+    }
     setFlash("");
     requestAnimationFrame(() => setFlash(ok ? "judged-good" : "judged-bad"));
 
     if (isEndurance(m) && clockRef.current <= 0) {
       clockRef.current = 0;
       setClock(0);
+      void finish();
+      return;
+    }
+    // sprint ends the moment the tenth good lift lands
+    if (!isEndurance(m) && hitsRef.current >= SPRINT_TARGET) {
       void finish();
       return;
     }
@@ -325,7 +334,11 @@ export default function RankedPage() {
           {result?.ranked && result.mode && (
             <div className="run-result">
               <b>{formatScore(result.mode, result.score ?? 0)}</b>
-              <span>{isEndurance(result.mode) ? "good lifts" : "total time"}</span>
+              <span>
+                {isEndurance(result.mode)
+                  ? "good lifts"
+                  : `for ${SPRINT_TARGET} good lifts`}
+              </span>
               <p className="account-note">
                 {result.correct}/{result.attempts} at{" "}
                 {Math.round((result.accuracy ?? 0) * 100)}% accuracy
@@ -348,7 +361,7 @@ export default function RankedPage() {
                 <span>
                   {isEndurance(m)
                     ? `${E.startSec}s · +${E.gainSec}s per lift · −${E.lossSec}s per miss`
-                    : `${SPRINT_CARDS} bars · +${SPRINT_MISS_PENALTY_SEC}s per miss`}
+                    : `${SPRINT_TARGET} good lifts · fastest time wins`}
                 </span>
               </button>
             ))}
@@ -403,24 +416,10 @@ export default function RankedPage() {
               {(clock / 1000).toFixed(1)}s
             </div>
             <div className="target">
-              {endurance ? (
-                <>
-                  <span>Good lifts</span>
-                  <b>{hits}</b>
-                </>
-              ) : load ? (
-                <>
-                  <span>Load · {idx + 1}/{SPRINT_CARDS}</span>
-                  <b>{fmt(target)} kg</b>
-                </>
-              ) : (
-                <>
-                  <span>Bar</span>
-                  <b>{idx + 1}/{SPRINT_CARDS}</b>
-                </>
-              )}
+              <span>Good lifts</span>
+              <b>{endurance ? hits : `${hits}/${SPRINT_TARGET}`}</b>
             </div>
-            {load && endurance && (
+            {load && (
               <div className="target target-second">
                 <span>Target</span>
                 <b>{fmt(target)} kg</b>
@@ -498,9 +497,7 @@ export default function RankedPage() {
             <p className="breakdown">
               {endurance
                 ? `${hits} good · ${misses} missed`
-                : `${idx + 1} of ${SPRINT_CARDS} · ${misses} missed (+${
-                    misses * SPRINT_MISS_PENALTY_SEC
-                  }s)`}
+                : `${SPRINT_TARGET - hits} to go · ${misses} missed`}
               {!load && " · typing 187 counts as 187.5"}
             </p>
           </section>

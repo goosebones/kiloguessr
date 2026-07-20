@@ -1,6 +1,11 @@
 import { generateCard, totalKg, type Card } from "./cards";
 import { answersMatch, loadedTotalQ, parseAnswer } from "./grading";
-import { RANKED_ENDURANCE, RANKED_SETTINGS, SPRINT_CARDS, SPRINT_MISS_PENALTY_SEC } from "./modes";
+import {
+  RANKED_ENDURANCE,
+  RANKED_SETTINGS,
+  SPRINT_MAX_CARDS,
+  SPRINT_TARGET,
+} from "./modes";
 import { mulberry32 } from "./rng";
 
 export type RankedMode =
@@ -28,8 +33,9 @@ export const isRankedMode = (m: string): m is RankedMode =>
 export const isLoadMode = (m: RankedMode) => m.endsWith("-load");
 export const isEndurance = (m: RankedMode) => m.startsWith("endurance-");
 
-/** Endurance gets a surplus batch; sprints are exactly ten. */
-export const cardsPerRun = (m: RankedMode) => (isEndurance(m) ? 120 : SPRINT_CARDS);
+/** Both formats get a surplus batch — runs end on the clock, not the cards. */
+export const cardsPerRun = (m: RankedMode) =>
+  isEndurance(m) ? 120 : SPRINT_MAX_CARDS;
 
 /** Deterministic card batch for a run — identical on client and server. */
 export function generateRunCards(mode: RankedMode, seed: number): Card[] {
@@ -75,7 +81,7 @@ export const MIN_CARD_MS = 350;
 export interface RunScore {
   valid: boolean;
   reason?: string;
-  /** endurance: good lifts. sprint: total ms including penalties (lower better). */
+  /** endurance: good lifts (higher better). sprint: milliseconds (lower better). */
   score: number;
   correct: number;
   attempts: number;
@@ -147,22 +153,24 @@ export function scoreRun(
     };
   }
 
-  if (answers.length !== SPRINT_CARDS) {
-    return invalid(`A sprint is exactly ${SPRINT_CARDS} cards.`);
-  }
+  // Sprint: race to SPRINT_TARGET good lifts. A miss isn't penalised directly —
+  // it costs you the card you spent plus the replacement you now have to answer.
   for (let i = 0; i < answers.length; i++) {
+    playedMs += answers[i].ms;
     const ok = gradeAnswer(mode, cards[i], answers[i]);
     verdicts.push(ok);
     if (ok) correct++;
-    playedMs += answers[i].ms;
+    if (correct >= SPRINT_TARGET) break;
   }
-  const misses = SPRINT_CARDS - correct;
+  if (correct < SPRINT_TARGET) {
+    return invalid(`A sprint needs ${SPRINT_TARGET} good lifts to post a time.`);
+  }
   return {
     valid: true,
-    score: playedMs + misses * SPRINT_MISS_PENALTY_SEC * 1000,
+    score: playedMs,
     correct,
-    attempts: SPRINT_CARDS,
-    accuracy: correct / SPRINT_CARDS,
+    attempts: verdicts.length,
+    accuracy: verdicts.length ? correct / verdicts.length : 0,
     verdicts,
     playedMs,
   };
