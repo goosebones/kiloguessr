@@ -477,6 +477,64 @@ summary:focus-visible {
   border: 1px solid rgba(128, 128, 128, 0.55);
 }
 
+/* ── Keybind editor ─────────────────── */
+.keybinds {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 12px;
+}
+.keybind-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.keybind {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+.keybind-plate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  font-weight: 600;
+}
+.keybind kbd {
+  font-family: var(--mono);
+  font-size: 12px;
+  min-width: 34px;
+  padding: 2px 5px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--bg);
+  color: var(--ink);
+}
+.keybind.listening kbd {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.keybind-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .stage svg,
   .verdict {
@@ -484,11 +542,30 @@ summary:focus-visible {
   }
 }
 @media (max-width: 560px) {
+  .game {
+    padding: 14px 12px 32px;
+    gap: 14px;
+  }
   .game header {
     align-items: flex-start;
     flex-direction: column;
   }
   .settings {
     gap: 12px;
+  }
+  /* give the bar as much width as the screen allows */
+  .stage {
+    padding: 8px 6px 0;
+  }
+  .stat {
+    min-width: 54px;
+    padding: 5px 9px;
+  }
+  .stat b {
+    font-size: 15px;
+  }
+  .plate-btn {
+    width: 42px;
+    height: 42px;
   }
 }

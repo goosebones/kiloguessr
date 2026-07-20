@@ -19,12 +19,28 @@ import {
   type RankedMode,
 } from "@kiloguessr/engine";
 import Barbell from "../../components/Barbell";
+import KeybindEditor from "../../components/KeybindEditor";
 import { authedFetch, ensureAmplify } from "../../lib/auth";
+import {
+  DEFAULT_KEYBINDS,
+  loadKeybinds,
+  plateForKey,
+  saveKeybinds,
+  type Keybinds,
+} from "../../lib/keybinds";
 import "../game.css";
 import "../account/account.css";
 import "./ranked.css";
 
-type Stage = "checking" | "signedout" | "nohandle" | "ready" | "playing" | "done";
+type Stage =
+  | "checking"
+  | "signedout"
+  | "nohandle"
+  | "ready"
+  | "armed"
+  | "countdown"
+  | "playing"
+  | "done";
 
 interface RunPayload {
   runId: string;
@@ -69,6 +85,10 @@ export default function RankedPage() {
   const [hits, setHits] = useState(0);
   const [flash, setFlash] = useState<"" | "judged-good" | "judged-bad">("");
   const [result, setResult] = useState<Result | null>(null);
+  const [count, setCount] = useState(3);
+  const [binds, setBinds] = useState<Keybinds>(DEFAULT_KEYBINDS);
+  const bindsRef = useRef(binds);
+  bindsRef.current = binds;
 
   const answers = useRef<Answer[]>([]);
   const cardShownAt = useRef(0);
@@ -85,6 +105,7 @@ export default function RankedPage() {
 
   useEffect(() => {
     ensureAmplify();
+    setBinds(loadKeybinds());
     (async () => {
       try {
         const { getCurrentUser } = await import("aws-amplify/auth");
@@ -137,7 +158,8 @@ export default function RankedPage() {
     return () => clearInterval(id);
   }, [stage, finish]);
 
-  const start = async (m: RankedMode) => {
+  /** Fetch the run and hold at the "load the bar" screen. */
+  const arm = async (m: RankedMode) => {
     setError("");
     setMode(m);
     try {
@@ -159,13 +181,27 @@ export default function RankedPage() {
       setPlates([]);
       setResult(null);
       setClock(clockRef.current);
-      setStage("playing");
-      cardShownAt.current = Date.now();
-      if (!isLoadMode(m)) requestAnimationFrame(() => inputRef.current?.focus());
+      setCount(3);
+      setStage("armed");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't start a run.");
     }
   };
+
+  // 3 · 2 · 1 · lift
+  useEffect(() => {
+    if (stage !== "countdown") return;
+    if (count <= 0) {
+      setStage("playing");
+      cardShownAt.current = Date.now();
+      if (!isLoadMode(modeRef.current)) {
+        requestAnimationFrame(() => inputRef.current?.focus());
+      }
+      return;
+    }
+    const t = setTimeout(() => setCount((c) => c - 1), 800);
+    return () => clearTimeout(t);
+  }, [stage, count]);
 
   const submitAnswer = useCallback(() => {
     if (stage !== "playing" || !run) return;
@@ -231,9 +267,9 @@ export default function RankedPage() {
     if (stage !== "playing" || !load) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
-      if (e.key >= "1" && e.key <= "9") {
-        const p = PLATES[Number(e.key) - 1];
-        if (p && p.kg >= RANKED_SETTINGS.smallest) addPlate(p.kg);
+      const kg = plateForKey(bindsRef.current, e.key);
+      if (kg !== null) {
+        if (kg >= RANKED_SETTINGS.smallest) addPlate(kg);
       } else if (e.key === "Backspace") {
         e.preventDefault();
         undoPlate();
@@ -306,7 +342,7 @@ export default function RankedPage() {
 
           <div className="mode-grid">
             {RANKED_MODES.map((m) => (
-              <button key={m} className="mode-card" onClick={() => start(m)}>
+              <button key={m} className="mode-card" onClick={() => arm(m)}>
                 <b>{MODE_LABELS[m]}</b>
                 <span>
                   {isEndurance(m)
@@ -320,6 +356,42 @@ export default function RankedPage() {
             Every ranked run uses the same loading: {RANKED_SETTINGS.bar} kg bar, collars
             on, plates down to {RANKED_SETTINGS.smallest} kg.
           </p>
+          <details className="legend" style={{ alignSelf: "center" }}>
+            <summary>Customize plate keys</summary>
+            <KeybindEditor
+              binds={binds}
+              smallest={RANKED_SETTINGS.smallest}
+              onChange={(next) => {
+                setBinds(next);
+                saveKeybinds(next);
+              }}
+            />
+          </details>
+        </section>
+      )}
+
+      {(stage === "armed" || stage === "countdown") && (
+        <section className="stage" aria-label="Ready to lift">
+          <div className="target">
+            <span>{MODE_LABELS[modeRef.current]}</span>
+          </div>
+          <Barbell plates={[]} collars={false} hidden />
+          <div className="cover">
+            {stage === "armed" ? (
+              <button className="start-btn" onClick={() => setStage("countdown")}>
+                Load the bar
+              </button>
+            ) : (
+              <div className="countdown" aria-live="assertive">
+                {count}
+              </div>
+            )}
+          </div>
+          <div className="prompt">
+            {stage === "armed"
+              ? "Press start when you're ready"
+              : "Get set…"}
+          </div>
         </section>
       )}
 
@@ -356,7 +428,7 @@ export default function RankedPage() {
             <Barbell plates={shown} collars={!load || plates.length > 0} />
             <div className="prompt">
               {load
-                ? "Keys 1–9 load plates · Backspace undoes · Enter submits"
+                ? "Plate keys load · Backspace undoes · Enter submits"
                 : "What's on the bar?"}
             </div>
           </section>
@@ -366,17 +438,17 @@ export default function RankedPage() {
               {load ? (
                 <div className="rack-wrap">
                   <div className="rack" aria-label="Plate rack">
-                    {RACK.map((p, i) => (
+                    {RACK.map((p) => (
                       <div className="rack-slot" key={p.kg}>
                         <button
                           className="plate-btn"
                           style={{ background: p.fill, borderColor: p.stroke, color: p.ink }}
-                          aria-label={`Add a ${fmt(p.kg)} kg plate (key ${i + 1})`}
+                          aria-label={`Add a ${fmt(p.kg)} kg plate`}
                           onClick={() => addPlate(p.kg)}
                         >
                           {fmt(p.kg)}
                         </button>
-                        <span className="key-hint">{i + 1}</span>
+                        <span className="key-hint">{binds[String(p.kg)] || "—"}</span>
                       </div>
                     ))}
                   </div>

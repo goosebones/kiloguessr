@@ -13,11 +13,19 @@ import {
   loadedTotalQ,
   mulberry32,
   parseAnswer,
-  plateByKg,
   totalKg,
   type Card,
   type GameSettings,
 } from "@kiloguessr/engine";
+import Barbell from "./Barbell";
+import KeybindEditor from "./KeybindEditor";
+import {
+  DEFAULT_KEYBINDS,
+  loadKeybinds,
+  plateForKey,
+  saveKeybinds,
+  type Keybinds,
+} from "../lib/keybinds";
 
 type Phase = "ready" | "ask" | "revealed";
 
@@ -79,6 +87,9 @@ export default function Game() {
   const [timerText, setTimerText] = useState("0.0s");
   const [timerLow, setTimerLow] = useState(false);
   const [gameOverInfo, setGameOverInfo] = useState<string | null>(null);
+  const [binds, setBinds] = useState<Keybinds>(DEFAULT_KEYBINDS);
+  const bindsRef = useRef(binds);
+  bindsRef.current = binds;
 
   const cardStart = useRef(0);
   const judgedAt = useRef(0);
@@ -92,6 +103,7 @@ export default function Game() {
   // hydrate persisted state on mount
   useEffect(() => {
     setSettings(loadSettings());
+    setBinds(loadKeybinds());
     try {
       const best = Number(localStorage.getItem("kilo.best")) || 0;
       setStats((s) => ({ ...s, best }));
@@ -273,10 +285,12 @@ export default function Game() {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
       const t = document.activeElement as HTMLElement | null;
       if (phase === "ask" && settingsRef.current.game === 1) {
-        if (e.key >= "1" && e.key <= "9" && !e.repeat) {
-          const p = PLATES[Number(e.key) - 1];
-          if (p) addPlate(p.kg);
-          return;
+        if (!e.repeat) {
+          const kg = plateForKey(bindsRef.current, e.key);
+          if (kg !== null) {
+            addPlate(kg);
+            return;
+          }
         }
         if (e.key === "Backspace" && t?.tagName !== "INPUT") {
           e.preventDefault();
@@ -328,19 +342,6 @@ export default function Game() {
   const showPlates = phase !== "ready";
   const shownPlates = isLoad ? playerPlates : (card?.sidePlates ?? []);
 
-  // bar geometry
-  const cy = 150;
-  let px = 192;
-  const drawn = showPlates
-    ? shownPlates.map((kg) => {
-        const p = plateByKg(kg)!;
-        const x = px;
-        px += p.t + 3;
-        return { p, x };
-      })
-    : [];
-  const collarX = px + 2;
-
   return (
     <main className="game">
       <header>
@@ -372,43 +373,11 @@ export default function Game() {
             <b>{fmt(totalKg(card))} kg</b>
           </div>
         )}
-        <svg viewBox="0 0 900 300" role="img" aria-label="One side of a loaded barbell">
-          <defs>
-            <linearGradient id="shaftFade" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stopColor="var(--steel)" stopOpacity="0" />
-              <stop offset="1" stopColor="var(--steel)" stopOpacity="1" />
-            </linearGradient>
-          </defs>
-          <rect x="20" y={cy - 7} width="152" height="14" fill="url(#shaftFade)" />
-          <rect x="172" y={cy - 32} width="16" height="64" rx="3" fill="var(--steel-dark)" />
-          <rect x="188" y={cy - 11} width="682" height="22" rx="4" fill="var(--steel)" />
-          {drawn.map(({ p, x }, i) => (
-            <g key={i}>
-              <rect
-                x={x} y={cy - p.h / 2} width={p.t} height={p.h} rx="3"
-                fill={p.fill} stroke={p.stroke} strokeWidth="1.5"
-              />
-              <text
-                x={x + p.t / 2} y={cy}
-                transform={`rotate(-90 ${x + p.t / 2} ${cy})`}
-                textAnchor="middle" dominantBaseline="central"
-                fontFamily="ui-monospace, Menlo, Consolas, monospace"
-                fontWeight="600" fontSize={Math.min(13, p.t - 2)} fill={p.ink}
-              >
-                {fmt(p.kg)}
-              </text>
-            </g>
-          ))}
-          {showPlates && settings.collars && (
-            <g>
-              <rect x={collarX} y={cy - 30} width="22" height="60" rx="4"
-                fill="#b9bec6" stroke="#83898f" strokeWidth="1.5" />
-              <rect x={collarX + 7} y={cy - 46} width="8" height="17" rx="2"
-                fill="#b9bec6" stroke="#83898f" strokeWidth="1.5" />
-            </g>
-          )}
-          <rect x="862" y={cy - 13} width="10" height="26" rx="3" fill="var(--steel-dark)" />
-        </svg>
+        <Barbell
+          plates={shownPlates}
+          collars={settings.collars}
+          hidden={!showPlates}
+        />
         {phase === "ready" && (
           <div className="cover">
             {gameOverInfo && (
@@ -457,18 +426,18 @@ export default function Game() {
           {isLoad && (
             <div className="rack-wrap">
               <div className="rack" aria-label="Plate rack">
-                {PLATES.map((p, i) =>
+                {PLATES.map((p) =>
                   p.kg < settings.smallest ? null : (
                     <div className="rack-slot" key={p.kg}>
                       <button
                         className="plate-btn"
                         style={{ background: p.fill, borderColor: p.stroke, color: p.ink }}
-                        aria-label={`Add a ${fmt(p.kg)} kg plate (key ${i + 1})`}
+                        aria-label={`Add a ${fmt(p.kg)} kg plate`}
                         onClick={() => addPlate(p.kg)}
                       >
                         {fmt(p.kg)}
                       </button>
-                      <span className="key-hint">{i + 1}</span>
+                      <span className="key-hint">{binds[String(p.kg)] || "—"}</span>
                     </div>
                   ),
                 )}
@@ -545,6 +514,20 @@ export default function Game() {
           />
         </Setting>
       </section>
+
+      {isLoad && (
+        <details className="legend">
+          <summary>Customize plate keys</summary>
+          <KeybindEditor
+            binds={binds}
+            smallest={settings.smallest}
+            onChange={(next) => {
+              setBinds(next);
+              saveKeybinds(next);
+            }}
+          />
+        </details>
+      )}
 
       <details className="legend">
         <summary>Plate colours</summary>

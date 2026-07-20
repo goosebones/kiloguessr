@@ -71,6 +71,23 @@
   top: 46px;
 }
 
+.countdown {
+  font-family: var(--display);
+  font-size: clamp(80px, 22vw, 150px);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--accent);
+  animation: count-pop 0.8s ease-out;
+}
+@keyframes count-pop {
+  0% { transform: scale(1.5); opacity: 0.2; }
+  30% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .countdown { animation: none; }
+}
+
 .bests {
   display: flex;
   flex-direction: column;
