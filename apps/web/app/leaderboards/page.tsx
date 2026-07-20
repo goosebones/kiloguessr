@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MODE_LABELS, formatScore, type RankedMode } from "@kiloguessr/engine";
+import {
+  MODE_LABELS,
+  RANKED_MODES,
+  formatScore,
+  isEndurance,
+  type RankedMode,
+} from "@kiloguessr/engine";
 import { API_URL } from "../../lib/auth";
 import "../game.css";
 import "../account/account.css";
@@ -13,9 +19,6 @@ interface Row {
   instagram: string | null;
   score: number;
 }
-
-/** Modes with a live board today; the rest arrive with M4. */
-const LIVE_MODES: RankedMode[] = ["endurance-read"];
 
 export default function LeaderboardsPage() {
   const [mode, setMode] = useState<RankedMode>("endurance-read");
@@ -54,9 +57,14 @@ export default function LeaderboardsPage() {
       <section className="settings" aria-label="Board filters">
         <div className="setting">
           <span>Mode</span>
-          <div className="seg" role="group">
-            {LIVE_MODES.map((m) => (
-              <button key={m} aria-pressed={m === mode} onClick={() => setMode(m)}>
+          <div className="seg seg-wrap" role="group" style={{ maxWidth: 420 }}>
+            {RANKED_MODES.map((m) => (
+              <button
+                key={m}
+                aria-pressed={m === mode}
+                onClick={() => setMode(m)}
+                style={{ flex: "1 0 45%" }}
+              >
                 {MODE_LABELS[m]}
               </button>
             ))}
@@ -90,7 +98,7 @@ export default function LeaderboardsPage() {
                 <tr>
                   <th>#</th>
                   <th>Lifter</th>
-                  <th>Good lifts</th>
+                  <th>{isEndurance(mode) ? "Good lifts" : "Time"}</th>
                 </tr>
               </thead>
               <tbody>

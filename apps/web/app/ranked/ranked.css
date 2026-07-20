@@ -27,6 +27,74 @@
   color: var(--muted);
 }
 
+.check-btn.linkish {
+  text-align: center;
+  text-decoration: none;
+  display: block;
+}
+
+.mode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+}
+.mode-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 12px 14px;
+  cursor: pointer;
+  color: var(--ink);
+}
+.mode-card:hover {
+  border-color: var(--accent);
+}
+.mode-card b {
+  font-family: var(--display);
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.mode-card span {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* second badge on the stage when both a counter and a target are shown */
+.target-second {
+  top: 46px;
+}
+
+.bests {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+.best-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 5px;
+  font-size: 13px;
+}
+.best-row span {
+  color: var(--muted);
+}
+.best-row b {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+}
+
 .board-table {
   width: 100%;
   border-collapse: collapse;

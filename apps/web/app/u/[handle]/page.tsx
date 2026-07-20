@@ -2,14 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import {
+  MODE_LABELS,
+  RANKED_MODES,
+  formatScore,
+  isEndurance,
+} from "@kiloguessr/engine";
 import { API_URL } from "../../../lib/auth";
 import "../../game.css";
 import "../../account/account.css";
+import "../../ranked/ranked.css";
 
 interface PublicProfile {
   handle: string;
   instagram: string | null;
   createdAt: string | null;
+  bests: Record<string, { score: number; submittedAt: number }>;
 }
 
 export default function PublicProfilePage() {
@@ -27,6 +35,9 @@ export default function PublicProfilePage() {
       .catch((e) => setError(e.message));
   }, [params?.handle]);
 
+  const bests = profile?.bests ?? {};
+  const hasAny = RANKED_MODES.some((m) => bests[m]);
+
   return (
     <main className="game account">
       <header>
@@ -36,9 +47,11 @@ export default function PublicProfilePage() {
             KiloGuessr<em>.</em>
           </h1>
         </div>
-        <a className="link-btn" href="/">
-          ← Back to the game
-        </a>
+        <nav className="nav-links">
+          <a className="link-btn" href="/">Practice</a>
+          <a className="link-btn" href="/ranked">Ranked</a>
+          <a className="link-btn" href="/leaderboards">Leaderboards</a>
+        </nav>
       </header>
 
       {error && <p className="account-error">{error}</p>}
@@ -59,6 +72,25 @@ export default function PublicProfilePage() {
               Instagram: @{profile.instagram}
             </a>
           )}
+
+          {hasAny ? (
+            <div className="bests">
+              {RANKED_MODES.map((m) =>
+                bests[m] ? (
+                  <div className="best-row" key={m}>
+                    <span>{MODE_LABELS[m]}</span>
+                    <b>
+                      {formatScore(m, bests[m].score)}
+                      {isEndurance(m) ? " lifts" : ""}
+                    </b>
+                  </div>
+                ) : null,
+              )}
+            </div>
+          ) : (
+            <p className="account-note">No ranked runs yet.</p>
+          )}
+
           {profile.createdAt && (
             <p className="account-note">
               Lifting here since{" "}
@@ -68,7 +100,6 @@ export default function PublicProfilePage() {
               })}
             </p>
           )}
-          <p className="account-note">Bests and ranks arrive with ranked mode.</p>
         </section>
       )}
     </main>

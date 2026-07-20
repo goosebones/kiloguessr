@@ -1,9 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import {
+  MODE_LABELS,
+  RANKED_MODES,
+  formatScore,
+  isEndurance,
+} from "@kiloguessr/engine";
 import { authedFetch, ensureAmplify } from "../../lib/auth";
 import "../game.css";
 import "./account.css";
+import "../ranked/ranked.css";
 
 type Mode = "loading" | "signin" | "signup" | "confirm" | "profile";
 
@@ -19,6 +26,7 @@ interface Profile {
   handle: string | null;
   instagram: string | null;
   createdAt: string | null;
+  bests?: Record<string, { score: number; submittedAt: number }>;
 }
 
 export default function AccountPage() {
@@ -246,6 +254,21 @@ export default function AccountPage() {
               onChange={(e) => setInstagram(e.target.value)}
             />
           </label>
+          {profile.bests && RANKED_MODES.some((m) => profile.bests?.[m]) && (
+            <div className="bests">
+              {RANKED_MODES.map((m) =>
+                profile.bests?.[m] ? (
+                  <div className="best-row" key={m}>
+                    <span>{MODE_LABELS[m]}</span>
+                    <b>
+                      {formatScore(m, profile.bests[m].score)}
+                      {isEndurance(m) ? " lifts" : ""}
+                    </b>
+                  </div>
+                ) : null,
+              )}
+            </div>
+          )}
           <div className="btn-row">
             <button className="check-btn" disabled={busy} onClick={doSave}>
               Save

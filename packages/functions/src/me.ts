@@ -6,6 +6,7 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 import type { APIGatewayProxyEventV2WithJWTAuthorizer } from "aws-lambda";
 import { TABLE, ddb, json, subOf } from "./lib/db";
+import { bestsOf } from "./users";
 
 const HANDLE_RE = /^[a-z0-9_]{3,20}$/;
 const IG_RE = /^[A-Za-z0-9._]{1,30}$/;
@@ -46,7 +47,7 @@ export const get = async (event: APIGatewayProxyEventV2WithJWTAuthorizer) => {
       item = (await readProfile(sub)) ?? item;
     }
   }
-  return json(200, publicProfile(item));
+  return json(200, { ...publicProfile(item), bests: await bestsOf(sub) });
 };
 
 export const patch = async (event: APIGatewayProxyEventV2WithJWTAuthorizer) => {
