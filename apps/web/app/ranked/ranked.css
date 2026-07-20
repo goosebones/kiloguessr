@@ -1,0 +1,76 @@
+.nav-links {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.run-result {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.run-result b {
+  font-family: var(--display);
+  font-size: 64px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--ink);
+}
+.run-result > span {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.board-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.board-table th {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--line);
+}
+.board-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+}
+.board-table td.rank,
+.board-table td.score {
+  font-family: var(--mono);
+  font-weight: 600;
+}
+.board-table td.rank {
+  width: 3ch;
+  color: var(--muted);
+}
+.board-table tr:nth-child(-n + 3) td.rank {
+  color: var(--accent);
+}
+.board-table a {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+}
+.board-table .ig {
+  color: var(--muted);
+  font-size: 12px;
+  margin-left: 8px;
+  border: none;
+}
+.board-scroll {
+  overflow-x: auto;
+  width: 100%;
+}

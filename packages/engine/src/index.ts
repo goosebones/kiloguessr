@@ -7,3 +7,4 @@ export * from "./rng";
 export * from "./cards";
 export * from "./grading";
 export * from "./modes";
+export * from "./scoring";

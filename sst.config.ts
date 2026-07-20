@@ -67,6 +67,21 @@ export default $config({
       link: [table],
     });
 
+    api.route(
+      "POST /v1/runs",
+      { handler: "packages/functions/src/runs.create", link: [table] },
+      authed,
+    );
+    api.route(
+      "POST /v1/runs/{id}/submit",
+      { handler: "packages/functions/src/runs.submit", link: [table] },
+      authed,
+    );
+    api.route("GET /v1/leaderboards/{mode}", {
+      handler: "packages/functions/src/leaderboards.get",
+      link: [table],
+    });
+
     const web = new sst.aws.Nextjs("Web", {
       path: "apps/web",
       domain: isProd ? { name: "kiloguessr.liftinglookup.com" } : undefined,
