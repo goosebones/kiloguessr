@@ -7,6 +7,7 @@ import {
   formatScore,
   isEndurance,
 } from "@kiloguessr/engine";
+import TopNav from "../../components/TopNav";
 import { authedFetch, ensureAmplify } from "../../lib/auth";
 import "../game.css";
 import "./account.css";
@@ -195,17 +196,12 @@ export default function AccountPage() {
 
   return (
     <main className="game account">
-      <header>
-        <div>
-          <div className="eyebrow">Account</div>
-          <h1 className="wordmark">
-            KiloGuessr<em>.</em>
-          </h1>
+      <TopNav active="account" />
+      <div className="page-title">
+        <div className="eyebrow">
+          {mode === "profile" ? "Edit profile" : "Account"}
         </div>
-        <a className="link-btn" href="/">
-          ← Back to the game
-        </a>
-      </header>
+      </div>
 
       {mode === "loading" && <p className="account-note">Loading…</p>}
 

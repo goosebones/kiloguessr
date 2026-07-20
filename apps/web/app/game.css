@@ -9,13 +9,16 @@
   gap: 18px;
 }
 
-/* ── Header ─────────────────────────── */
-.game header {
+/* ── Top nav ─────────────────────────── */
+.topnav {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px;
+}
+.brand {
+  text-decoration: none;
+  color: var(--ink);
 }
 .eyebrow {
   font-size: 11px;
@@ -27,46 +30,74 @@
 }
 .wordmark {
   font-family: var(--display);
-  font-size: clamp(30px, 5vw, 42px);
+  font-size: clamp(26px, 5vw, 40px);
   font-weight: 800;
   letter-spacing: 0.01em;
   text-transform: uppercase;
   line-height: 1;
+  display: inline-block;
 }
 .wordmark em {
   font-style: normal;
   color: var(--accent);
 }
-.stats {
+.topnav-links {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
 }
-.nav-links {
+.topnav-links a {
+  font-family: var(--display);
+  font-size: clamp(13px, 3.6vw, 16px);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-decoration: none;
+  padding: 7px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  white-space: nowrap;
+}
+.topnav-links a:hover {
+  border-color: var(--accent);
+}
+.topnav-links a[aria-current="page"] {
+  background: var(--chip-active-bg);
+  color: var(--chip-active-ink);
+  border-color: var(--chip-active-bg);
+}
+
+.page-title {
+  margin-top: -6px;
+}
+
+/* ── Stat bar ────────────────────────── */
+.statbar {
   display: flex;
-  gap: 14px;
-  align-items: center;
-  flex-wrap: wrap;
+  gap: 6px;
 }
 .stat {
+  flex: 1 1 0;
+  min-width: 0;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 6px;
-  padding: 6px 12px;
+  padding: 5px 4px;
   text-align: center;
-  min-width: 64px;
 }
 .stat b {
   display: block;
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
-  font-size: 17px;
+  font-size: clamp(14px, 4.2vw, 17px);
   font-weight: 600;
+  white-space: nowrap;
 }
 .stat span {
-  font-size: 10px;
+  font-size: clamp(8px, 2.4vw, 10px);
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -187,6 +218,20 @@
   justify-content: center;
   gap: 14px;
 }
+/* full-stage opaque overlay: lede + start, nothing showing through */
+.cover-full {
+  inset: 0;
+  background: var(--surface);
+  z-index: 3;
+}
+.cover-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  text-align: center;
+}
 .cover-info {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -209,13 +254,11 @@
   margin-bottom: 2px;
 }
 .cover-lede {
-  max-width: 34ch;
+  max-width: 32ch;
   text-align: center;
-  font-size: 14px;
+  font-size: 15px;
+  line-height: 1.5;
   color: var(--muted);
-  background: var(--surface);
-  border-radius: 8px;
-  padding: 6px 14px;
 }
 .start-btn {
   font-family: var(--display);
@@ -395,26 +438,36 @@ summary:focus-visible {
 }
 
 /* ── Settings ───────────────────────── */
+/* one setting per row: label left, control right */
 .settings {
   display: flex;
-  justify-content: center;
-  gap: 20px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 4px;
   border-top: 1px solid var(--line);
-  padding-top: 18px;
+  padding-top: 14px;
+  max-width: 460px;
+  width: 100%;
+  margin: 0 auto;
 }
 .setting {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
-  align-items: flex-start;
+  flex-flow: row wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+.setting:last-child {
+  border-bottom: none;
 }
 .setting > span {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
+  flex-shrink: 0;
 }
 .seg {
   display: flex;
@@ -443,10 +496,11 @@ summary:focus-visible {
 }
 .seg-wrap {
   flex-wrap: wrap;
-  max-width: 340px;
+  max-width: 300px;
+  justify-content: flex-end;
 }
 .seg-wrap button {
-  flex: 1 0 20%;
+  flex: 1 0 18%;
   border-bottom: 1px solid var(--line);
 }
 
@@ -465,27 +519,62 @@ summary:focus-visible {
 .legend summary::-webkit-details-marker {
   display: none;
 }
-.legend-grid {
+/* ── Site footer ────────────────────── */
+.site-footer {
   display: flex;
-  gap: 14px;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+  margin-top: 8px;
+  text-align: center;
+}
+.site-footer nav {
+  display: flex;
+  gap: 10px 18px;
   flex-wrap: wrap;
   justify-content: center;
-  padding: 12px 0 0;
-}
-.legend-item {
-  display: flex;
   align-items: center;
-  gap: 6px;
-  font-family: var(--mono);
-  font-variant-numeric: tabular-nums;
+}
+.site-footer a {
   font-size: 13px;
+  color: var(--muted);
+  text-decoration: none;
+}
+.site-footer a:hover {
   color: var(--ink);
 }
-.swatch {
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  border: 1px solid rgba(128, 128, 128, 0.55);
+.footer-legal {
+  font-size: 12px;
+  color: var(--muted);
+}
+.footer-legal span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ── Profile ────────────────────────── */
+.profile-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ── Instagram link ─────────────────── */
+.ig-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+.ig-link:hover {
+  color: var(--accent);
 }
 
 /* ── Keybind editor ─────────────────── */
@@ -557,12 +646,9 @@ summary:focus-visible {
     padding: 14px 12px 32px;
     gap: 14px;
   }
-  .game header {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-  .settings {
-    gap: 12px;
+  .topnav-links a {
+    padding: 7px 11px;
+    letter-spacing: 0.02em;
   }
   /* give the bar as much of the screen as it can take */
   .stage {
@@ -571,15 +657,20 @@ summary:focus-visible {
   .stage svg {
     max-height: 42vh;
   }
-  .stat {
-    min-width: 54px;
-    padding: 5px 9px;
-  }
-  .stat b {
-    font-size: 15px;
-  }
   .plate-btn {
     width: 42px;
     height: 42px;
+  }
+}
+@media (max-width: 380px) {
+  .topnav {
+    gap: 6px;
+  }
+  .topnav-links {
+    gap: 6px;
+  }
+  .topnav-links a {
+    padding: 6px 9px;
+    font-size: 12px;
   }
 }

@@ -20,6 +20,7 @@ import {
 import Barbell from "../../components/Barbell";
 import Footer from "../../components/Footer";
 import KeybindEditor from "../../components/KeybindEditor";
+import TopNav from "../../components/TopNav";
 import { authedFetch, ensureAmplify } from "../../lib/auth";
 import {
   DEFAULT_KEYBINDS,
@@ -299,19 +300,7 @@ export default function RankedPage() {
 
   return (
     <main className="game account">
-      <header>
-        <div>
-          <div className="eyebrow">Ranked</div>
-          <h1 className="wordmark">
-            KiloGuessr<em>.</em>
-          </h1>
-        </div>
-        <nav className="nav-links">
-          <a className="link-btn" href="/">Practice</a>
-          <a className="link-btn" href="/leaderboards">Leaderboards</a>
-          <a className="link-btn" href="/account">Account</a>
-        </nav>
-      </header>
+      <TopNav active="ranked" />
 
       {stage === "checking" && <p className="account-note">Checking your account…</p>}
 
@@ -370,6 +359,9 @@ export default function RankedPage() {
             Every ranked run uses the same loading: {RANKED_SETTINGS.bar} kg bar, collars
             on, plates down to {RANKED_SETTINGS.smallest} kg.
           </p>
+          <a className="check-btn linkish" href="/leaderboards">
+            View leaderboards
+          </a>
           <details className="legend" style={{ alignSelf: "center" }}>
             <summary>Customize plate keys</summary>
             <KeybindEditor

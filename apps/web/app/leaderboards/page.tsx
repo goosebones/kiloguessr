@@ -9,6 +9,7 @@ import {
   type RankedMode,
 } from "@kiloguessr/engine";
 import Footer from "../../components/Footer";
+import TopNav from "../../components/TopNav";
 import { API_URL } from "../../lib/auth";
 import "../game.css";
 import "../account/account.css";
@@ -45,19 +46,10 @@ export default function LeaderboardsPage() {
 
   return (
     <main className="game account">
-      <header>
-        <div>
-          <div className="eyebrow">Leaderboards</div>
-          <h1 className="wordmark">
-            KiloGuessr<em>.</em>
-          </h1>
-        </div>
-        <nav className="nav-links">
-          <a className="link-btn" href="/">Practice</a>
-          <a className="link-btn" href="/ranked">Ranked</a>
-          <a className="link-btn" href="/account">Account</a>
-        </nav>
-      </header>
+      <TopNav active="ranked" />
+      <div className="page-title">
+        <div className="eyebrow">Leaderboards</div>
+      </div>
 
       <section className="settings" aria-label="Board filters">
         <div className="setting">

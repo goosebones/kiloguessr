@@ -20,6 +20,7 @@ import {
 import Barbell from "./Barbell";
 import Footer from "./Footer";
 import KeybindEditor from "./KeybindEditor";
+import TopNav from "./TopNav";
 import {
   DEFAULT_KEYBINDS,
   loadKeybinds,
@@ -345,26 +346,15 @@ export default function Game() {
 
   return (
     <main className="game">
-      <header>
-        <div>
-          <div className="eyebrow">IPF kg · flash cards</div>
-          <h1 className="wordmark">
-            KiloGuessr<em>.</em>
-          </h1>
-        </div>
-        <div className="stats" aria-label="Session stats">
-          <nav className="nav-links" style={{ alignSelf: "center", marginRight: 4 }}>
-            <a className="link-btn" href="/ranked">Ranked</a>
-            <a className="link-btn" href="/leaderboards">Boards</a>
-            <a className="link-btn" href="/account">Account</a>
-          </nav>
-          <div className="stat"><b>{stats.correct}/{stats.attempts}</b><span>Score</span></div>
-          <div className="stat"><b>{acc}</b><span>Acc</span></div>
-          <div className="stat"><b>{stats.streak}</b><span>Streak</span></div>
-          <div className="stat"><b>{stats.best}</b><span>Best</span></div>
-          <div className="stat"><b>{avg}</b><span>Avg</span></div>
-        </div>
-      </header>
+      <TopNav />
+
+      <div className="statbar" aria-label="Session stats">
+        <div className="stat"><b>{stats.correct}/{stats.attempts}</b><span>Score</span></div>
+        <div className="stat"><b>{acc}</b><span>Acc</span></div>
+        <div className="stat"><b>{stats.streak}</b><span>Streak</span></div>
+        <div className="stat"><b>{stats.best}</b><span>Best</span></div>
+        <div className="stat"><b>{avg}</b><span>Avg</span></div>
+      </div>
 
       <section className={`stage ${judged}`} aria-label="Loaded barbell">
         <div className={`timer ${timerLow ? "low" : ""}`}>{timerText}</div>
@@ -379,33 +369,34 @@ export default function Game() {
           collars={settings.collars}
           hidden={!showPlates}
         />
-        {phase === "ready" && (
-          <div className="cover">
-            {gameOverInfo && (
-              <div className="cover-info">
-                <b>Time!</b>
-                {gameOverInfo}
-              </div>
-            )}
-            {!started && !gameOverInfo && stats.attempts === 0 && (
-              <p className="cover-lede">
-                {isLoad
-                  ? "Build the bar to hit the target weight."
-                  : "Read the loaded bar and type the total — bar, both sides, and collars."}
-              </p>
-            )}
-            <button ref={startRef} className="start-btn" onClick={startCard}>
-              {gameOverInfo ? "Go again" : "Start"}
-            </button>
+        {phase !== "ready" && (
+          <div className="prompt">
+            {isLoad
+              ? "Plate keys load · Backspace undoes · Enter submits"
+              : "What's on the bar?"}
           </div>
         )}
-        <div className="prompt">
-          {phase === "ready"
-            ? "Press start when you're ready"
-            : isLoad
-              ? "Keys 1–9 load plates · Backspace undoes · Enter submits"
-              : "What's on the bar?"}
-        </div>
+        {phase === "ready" && (
+          <div className="cover cover-full">
+            <div className="cover-inner">
+              {gameOverInfo ? (
+                <div className="cover-info">
+                  <b>Time!</b>
+                  {gameOverInfo}
+                </div>
+              ) : (
+                <p className="cover-lede">
+                  {isLoad
+                    ? "Build the bar to hit the target weight."
+                    : "Read the loaded bar and type the total — bar, both sides, and collars."}
+                </p>
+              )}
+              <button ref={startRef} className="start-btn" onClick={startCard}>
+                {gameOverInfo ? "Go again" : "Start"}
+              </button>
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="console">
@@ -551,18 +542,6 @@ export default function Game() {
           />
         </details>
       )}
-
-      <details className="legend">
-        <summary>Plate colours</summary>
-        <div className="legend-grid">
-          {PLATES.map((p) => (
-            <div className="legend-item" key={p.kg}>
-              <span className="swatch" style={{ background: p.fill }} />
-              {fmt(p.kg)}
-            </div>
-          ))}
-        </div>
-      </details>
 
       <Footer />
     </main>

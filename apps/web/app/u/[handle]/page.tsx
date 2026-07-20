@@ -8,7 +8,10 @@ import {
   formatScore,
   isEndurance,
 } from "@kiloguessr/engine";
-import { API_URL } from "../../../lib/auth";
+import Footer from "../../../components/Footer";
+import InstagramLink from "../../../components/InstagramLink";
+import TopNav from "../../../components/TopNav";
+import { API_URL, authedFetch, ensureAmplify } from "../../../lib/auth";
 import "../../game.css";
 import "../../account/account.css";
 import "../../ranked/ranked.css";
@@ -24,6 +27,7 @@ export default function PublicProfilePage() {
   const params = useParams<{ handle: string }>();
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [error, setError] = useState("");
+  const [isOwner, setIsOwner] = useState(false);
 
   useEffect(() => {
     if (!params?.handle) return;
@@ -35,43 +39,50 @@ export default function PublicProfilePage() {
       .catch((e) => setError(e.message));
   }, [params?.handle]);
 
+  // is the signed-in lifter looking at their own profile?
+  useEffect(() => {
+    if (!params?.handle) return;
+    ensureAmplify();
+    (async () => {
+      try {
+        const { getCurrentUser } = await import("aws-amplify/auth");
+        await getCurrentUser();
+        const res = await authedFetch("/v1/me");
+        const me = await res.json();
+        if (
+          me.handle &&
+          me.handle.toLowerCase() === params.handle.toLowerCase()
+        ) {
+          setIsOwner(true);
+        }
+      } catch {
+        /* signed out */
+      }
+    })();
+  }, [params?.handle]);
+
   const bests = profile?.bests ?? {};
   const hasAny = RANKED_MODES.some((m) => bests[m]);
 
   return (
     <main className="game account">
-      <header>
-        <div>
-          <div className="eyebrow">Lifter profile</div>
-          <h1 className="wordmark">
-            KiloGuessr<em>.</em>
-          </h1>
-        </div>
-        <nav className="nav-links">
-          <a className="link-btn" href="/">Practice</a>
-          <a className="link-btn" href="/ranked">Ranked</a>
-          <a className="link-btn" href="/leaderboards">Leaderboards</a>
-        </nav>
-      </header>
+      <TopNav active="account" />
 
       {error && <p className="account-error">{error}</p>}
       {!error && !profile && <p className="account-note">Loading…</p>}
 
       {profile && (
-        <section className="card">
-          <h2 className="wordmark" style={{ fontSize: 28 }}>
-            @{profile.handle}
-          </h2>
-          {profile.instagram && (
-            <a
-              className="link-btn"
-              href={`https://instagram.com/${profile.instagram}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Instagram: @{profile.instagram}
-            </a>
-          )}
+        <section className="card profile-card">
+          <div className="profile-head">
+            <h2 className="wordmark" style={{ fontSize: 30 }}>
+              @{profile.handle}
+            </h2>
+            {isOwner && (
+              <a className="link-btn" href="/account">Edit profile</a>
+            )}
+          </div>
+
+          {profile.instagram && <InstagramLink name={profile.instagram} />}
 
           {hasAny ? (
             <div className="bests">
@@ -88,7 +99,10 @@ export default function PublicProfilePage() {
               )}
             </div>
           ) : (
-            <p className="account-note">No ranked runs yet.</p>
+            <p className="account-note">
+              No ranked runs yet.{" "}
+              {isOwner && <a href="/ranked">Play one →</a>}
+            </p>
           )}
 
           {profile.createdAt && (
@@ -102,6 +116,8 @@ export default function PublicProfilePage() {
           )}
         </section>
       )}
+
+      <Footer />
     </main>
   );
 }
