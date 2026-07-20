@@ -469,7 +469,11 @@ export default function RankedPage() {
                     ref={inputRef}
                     type="text"
                     inputMode="decimal"
+                    enterKeyHint="go"
                     autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
                     placeholder="0"
                     aria-label="Total weight in kilograms"
                     value={answer}
@@ -481,7 +485,12 @@ export default function RankedPage() {
                   <span className="unit">kg</span>
                 </div>
               )}
-              <button className="check-btn" onClick={submitAnswer}>
+              <button
+                className="check-btn"
+                // keep the caret (and the phone keyboard) in the input
+                onMouseDown={(e) => !load && e.preventDefault()}
+                onClick={submitAnswer}
+              >
                 {load ? "Submit" : "Check"}
               </button>
             </div>

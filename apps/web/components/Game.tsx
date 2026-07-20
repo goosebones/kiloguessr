@@ -408,7 +408,11 @@ export default function Game() {
                 ref={answerRef}
                 type="text"
                 inputMode="decimal"
+                enterKeyHint="go"
                 autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
                 placeholder="0"
                 aria-label="Total weight in kilograms"
                 disabled={phase !== "ask"}
@@ -454,10 +458,21 @@ export default function Game() {
               </button>
             </div>
           )}
-          <button className="check-btn" disabled={phase !== "ask"} onClick={() => judge(false)}>
+          <button
+            className="check-btn"
+            disabled={phase !== "ask"}
+            // keep the caret (and the phone keyboard) in the input
+            onMouseDown={(e) => !isLoad && e.preventDefault()}
+            onClick={() => judge(false)}
+          >
             {isLoad ? "Submit" : "Check"}
           </button>
-          <button className="link-btn" disabled={phase !== "ask"} onClick={() => judge(true)}>
+          <button
+            className="link-btn"
+            disabled={phase !== "ask"}
+            onMouseDown={(e) => !isLoad && e.preventDefault()}
+            onClick={() => judge(true)}
+          >
             Show answer
           </button>
         </div>
