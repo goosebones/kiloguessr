@@ -31,8 +31,8 @@ interface UiSettings extends GameSettings {
 const DEFAULT_SETTINGS: UiSettings = {
   bar: 20,
   collars: true,
-  smallest: 2.5,
-  max: 225,
+  smallest: 1.25,
+  max: 375,
   game: 0,
   timer: 0,
 };

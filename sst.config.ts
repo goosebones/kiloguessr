@@ -29,6 +29,19 @@ export default $config({
 
     const userPool = new sst.aws.CognitoUserPool("UserPool", {
       usernames: ["email"],
+      transform: {
+        // Length over composition rules: a long passphrase beats "Password1!".
+        userPool: {
+          passwordPolicy: {
+            minimumLength: 10,
+            requireLowercase: false,
+            requireUppercase: false,
+            requireNumbers: false,
+            requireSymbols: false,
+            temporaryPasswordValidityDays: 7,
+          },
+        },
+      },
     });
     const userPoolClient = userPool.addClient("WebClient");
 

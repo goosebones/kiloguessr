@@ -22,11 +22,7 @@ type Mode =
   | "profile";
 
 const PW_RULES: [string, (p: string) => boolean][] = [
-  ["At least 8 characters", (p) => p.length >= 8],
-  ["A lowercase letter", (p) => /[a-z]/.test(p)],
-  ["An uppercase letter", (p) => /[A-Z]/.test(p)],
-  ["A number", (p) => /[0-9]/.test(p)],
-  ["A symbol (!@#$%…)", (p) => /[^A-Za-z0-9\s]/.test(p)],
+  ["At least 10 characters", (p) => p.length >= 10],
 ];
 
 const passwordOk = (p: string) => PW_RULES.every(([, test]) => test(p));
