@@ -12,7 +12,14 @@ import "../game.css";
 import "./account.css";
 import "../ranked/ranked.css";
 
-type Mode = "loading" | "signin" | "signup" | "confirm" | "profile";
+type Mode =
+  | "loading"
+  | "signin"
+  | "signup"
+  | "confirm"
+  | "forgot"
+  | "reset"
+  | "profile";
 
 const PW_RULES: [string, (p: string) => boolean][] = [
   ["At least 8 characters", (p) => p.length >= 8],
@@ -21,6 +28,23 @@ const PW_RULES: [string, (p: string) => boolean][] = [
   ["A number", (p) => /[0-9]/.test(p)],
   ["A symbol (!@#$%…)", (p) => /[^A-Za-z0-9\s]/.test(p)],
 ];
+
+const passwordOk = (p: string) => PW_RULES.every(([, test]) => test(p));
+
+function PasswordRules({ password }: { password: string }) {
+  return (
+    <ul className="pw-rules" aria-label="Password requirements">
+      {PW_RULES.map(([label, test]) => {
+        const ok = test(password);
+        return (
+          <li key={label} className={ok ? "ok" : password ? "bad" : ""}>
+            <span aria-hidden="true">{ok ? "✓" : "○"}</span> {label}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
 
 interface Profile {
   handle: string | null;
@@ -100,6 +124,28 @@ export default function AccountPage() {
   const doSignIn = () =>
     run(async () => {
       const { signIn } = await import("aws-amplify/auth");
+      await signIn({ username: email, password });
+      await loadProfile();
+    });
+
+  const doForgot = () =>
+    run(async () => {
+      const { resetPassword } = await import("aws-amplify/auth");
+      await resetPassword({ username: email });
+      setNotice(`We emailed a reset code to ${email}.`);
+      setCode("");
+      setPassword("");
+      setMode("reset");
+    });
+
+  const doReset = () =>
+    run(async () => {
+      const { confirmResetPassword, signIn } = await import("aws-amplify/auth");
+      await confirmResetPassword({
+        username: email,
+        confirmationCode: code.trim(),
+        newPassword: password,
+      });
       await signIn({ username: email, password });
       await loadProfile();
     });
@@ -186,30 +232,87 @@ export default function AccountPage() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </label>
-          {mode === "signup" && (
-            <ul className="pw-rules" aria-label="Password requirements">
-              {PW_RULES.map(([label, test]) => {
-                const ok = test(password);
-                const cls = ok ? "ok" : password ? "bad" : "";
-                return (
-                  <li key={label} className={cls}>
-                    <span aria-hidden="true">{ok ? "✓" : "○"}</span> {label}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
+          {mode === "signup" && <PasswordRules password={password} />}
           <button
             className="check-btn"
             disabled={
               busy ||
               !email ||
               !password ||
-              (mode === "signup" && !PW_RULES.every(([, test]) => test(password)))
+              (mode === "signup" && !passwordOk(password))
             }
             onClick={mode === "signup" ? doSignUp : doSignIn}
           >
             {mode === "signup" ? "Create account" : "Sign in"}
+          </button>
+          {mode === "signin" && (
+            <button
+              className="link-btn"
+              onClick={() => {
+                setError("");
+                setNotice("");
+                setMode("forgot");
+              }}
+            >
+              Forgot your password?
+            </button>
+          )}
+        </section>
+      )}
+
+      {mode === "forgot" && (
+        <section className="card">
+          <p className="account-note">
+            Enter your email and we&apos;ll send you a code to set a new password.
+          </p>
+          <label>
+            Email
+            <input
+              type="email"
+              value={email}
+              autoComplete="email"
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </label>
+          <button className="check-btn" disabled={busy || !email} onClick={doForgot}>
+            Send reset code
+          </button>
+          <button className="link-btn" onClick={() => setMode("signin")}>
+            Back to sign in
+          </button>
+        </section>
+      )}
+
+      {mode === "reset" && (
+        <section className="card">
+          <p className="account-note">{notice || `Enter the code we emailed to ${email}.`}</p>
+          <label>
+            Reset code
+            <input
+              inputMode="numeric"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+            />
+          </label>
+          <label>
+            New password
+            <input
+              type="password"
+              value={password}
+              autoComplete="new-password"
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </label>
+          <PasswordRules password={password} />
+          <button
+            className="check-btn"
+            disabled={busy || !code || !passwordOk(password)}
+            onClick={doReset}
+          >
+            Set new password
+          </button>
+          <button className="link-btn" onClick={doForgot} disabled={busy}>
+            Send a new code
           </button>
         </section>
       )}
