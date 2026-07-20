@@ -19,6 +19,7 @@ import {
   type RankedMode,
 } from "@kiloguessr/engine";
 import Barbell from "../../components/Barbell";
+import Footer from "../../components/Footer";
 import KeybindEditor from "../../components/KeybindEditor";
 import { authedFetch, ensureAmplify } from "../../lib/auth";
 import {
@@ -506,7 +507,22 @@ export default function RankedPage() {
         </>
       )}
 
-      {error && <p className="account-error">{error}</p>}
+      {error && (
+        <section className="card">
+          <p className="account-error">{error}</p>
+          <button
+            className="link-btn"
+            onClick={() => {
+              setError("");
+              setStage("ready");
+            }}
+          >
+            Back to the modes
+          </button>
+        </section>
+      )}
+
+      {stage !== "playing" && <Footer />}
     </main>
   );
 }

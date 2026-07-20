@@ -20,6 +20,7 @@ import {
   type SubmittedAnswer,
 } from "@kiloguessr/engine";
 import { TABLE, ddb, json, subOf } from "./lib/db";
+import { RateLimited, checkRunRate } from "./lib/rate";
 
 const RUN_TTL_DAYS = 90;
 /** A run must be submitted within this window of being issued. */
@@ -50,6 +51,13 @@ export const create = async (event: APIGatewayProxyEventV2WithJWTAuthorizer) => 
     return json(409, {
       error: "Claim a handle on your account page before playing ranked.",
     });
+  }
+
+  try {
+    await checkRunRate(sub);
+  } catch (e) {
+    if (e instanceof RateLimited) return json(429, { error: e.message });
+    throw e;
   }
 
   const runId = randomUUID();
@@ -196,6 +204,13 @@ export const submit = async (event: APIGatewayProxyEventV2WithJWTAuthorizer) => 
     } catch {
       // window best already better — leave it
     }
+    // pointer so account deletion can find every board this user appears on
+    await ddb.send(
+      new PutCommand({
+        TableName: TABLE,
+        Item: { pk: `USER#${sub}`, sk: `LBREF#${mode}#${window}`, mode, window },
+      }),
+    );
   }
 
   // Where this lands on the all-time board

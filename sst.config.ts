@@ -52,7 +52,7 @@ export default $config({
           ? ["https://kiloguessr.liftinglookup.com"]
           : ["*"],
         allowHeaders: ["authorization", "content-type"],
-        allowMethods: ["GET", "POST", "PATCH", "OPTIONS"],
+        allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
       },
     });
 
@@ -73,6 +73,11 @@ export default $config({
     api.route(
       "PATCH /v1/me",
       { handler: "packages/functions/src/me.patch", link: [table] },
+      authed,
+    );
+    api.route(
+      "DELETE /v1/me",
+      { handler: "packages/functions/src/account.remove", link: [table] },
       authed,
     );
     api.route("GET /v1/users/{handle}", {

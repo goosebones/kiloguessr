@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   MODE_LABELS,
   RANKED_MODES,
@@ -8,6 +8,7 @@ import {
   isEndurance,
   type RankedMode,
 } from "@kiloguessr/engine";
+import Footer from "../../components/Footer";
 import { API_URL } from "../../lib/auth";
 import "../game.css";
 import "../account/account.css";
@@ -26,7 +27,7 @@ export default function LeaderboardsPage() {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [error, setError] = useState("");
 
-  useEffect(() => {
+  const load = useCallback(() => {
     setRows(null);
     setError("");
     fetch(`${API_URL}/v1/leaderboards/${mode}?window=${window}`)
@@ -35,8 +36,12 @@ export default function LeaderboardsPage() {
         if (!res.ok) throw new Error(data.error ?? "Couldn't load the board.");
         setRows(data.rows);
       })
-      .catch((e) => setError(e.message));
+      .catch(() =>
+        setError("Couldn't reach the leaderboard. Check your connection and retry."),
+      );
   }, [mode, window]);
+
+  useEffect(load, [load]);
 
   return (
     <main className="game account">
@@ -84,12 +89,22 @@ export default function LeaderboardsPage() {
       </section>
 
       <section className="card" style={{ maxWidth: 620 }}>
-        {error && <p className="account-error">{error}</p>}
-        {!error && !rows && <p className="account-note">Loading…</p>}
+        {error && (
+          <>
+            <p className="account-error">{error}</p>
+            <button className="link-btn" onClick={load}>Retry</button>
+          </>
+        )}
+        {!error && !rows && <p className="account-note">Loading the board…</p>}
         {rows?.length === 0 && (
-          <p className="account-note">
-            Nobody on this board yet. Be the first — play a ranked run.
-          </p>
+          <>
+            <p className="account-note">
+              {window === "week"
+                ? "No scores on this board yet this week. The week resets Sunday at midnight Eastern."
+                : "Nobody has set a score in this mode yet."}
+            </p>
+            <a className="check-btn linkish" href="/ranked">Be the first</a>
+          </>
         )}
         {rows && rows.length > 0 && (
           <div className="board-scroll">
@@ -126,6 +141,8 @@ export default function LeaderboardsPage() {
           </div>
         )}
       </section>
+
+      <Footer />
     </main>
   );
 }

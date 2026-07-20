@@ -18,6 +18,7 @@ import {
   type GameSettings,
 } from "@kiloguessr/engine";
 import Barbell from "./Barbell";
+import Footer from "./Footer";
 import KeybindEditor from "./KeybindEditor";
 import {
   DEFAULT_KEYBINDS,
@@ -386,6 +387,13 @@ export default function Game() {
                 {gameOverInfo}
               </div>
             )}
+            {!started && !gameOverInfo && stats.attempts === 0 && (
+              <p className="cover-lede">
+                {isLoad
+                  ? "Build the bar to hit the target weight."
+                  : "Read the loaded bar and type the total — bar, both sides, and collars."}
+              </p>
+            )}
             <button ref={startRef} className="start-btn" onClick={startCard}>
               {gameOverInfo ? "Go again" : "Start"}
             </button>
@@ -555,6 +563,8 @@ export default function Game() {
           ))}
         </div>
       </details>
+
+      <Footer />
     </main>
   );
 }

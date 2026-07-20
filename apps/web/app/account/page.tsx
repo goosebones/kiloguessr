@@ -60,6 +60,7 @@ export default function AccountPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [handle, setHandle] = useState("");
   const [instagram, setInstagram] = useState("");
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const loadProfile = useCallback(async () => {
     const res = await authedFetch("/v1/me");
@@ -152,6 +153,22 @@ export default function AccountPage() {
       await signOut();
       setProfile(null);
       setMode("signin");
+    });
+
+  const doDelete = () =>
+    run(async () => {
+      const res = await authedFetch("/v1/me", { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? "Couldn't delete your account.");
+      }
+      // our data is gone; now remove the login itself
+      const { deleteUser } = await import("aws-amplify/auth");
+      await deleteUser();
+      setProfile(null);
+      setConfirmingDelete(false);
+      setMode("signin");
+      setNotice("Your account and all its scores have been deleted.");
     });
 
   const doSave = () =>
@@ -380,6 +397,33 @@ export default function AccountPage() {
             <button className="link-btn" disabled={busy} onClick={doSignOut}>
               Sign out
             </button>
+          </div>
+
+          <div className="danger-zone">
+            {confirmingDelete ? (
+              <>
+                <p className="account-note">
+                  This erases your handle, Instagram link, run history and every
+                  leaderboard entry, then removes your login. It can&apos;t be undone.
+                </p>
+                <div className="btn-row">
+                  <button className="danger-btn" disabled={busy} onClick={doDelete}>
+                    Yes, delete everything
+                  </button>
+                  <button
+                    className="link-btn"
+                    disabled={busy}
+                    onClick={() => setConfirmingDelete(false)}
+                  >
+                    Keep my account
+                  </button>
+                </div>
+              </>
+            ) : (
+              <button className="danger-btn" onClick={() => setConfirmingDelete(true)}>
+                Delete account
+              </button>
+            )}
           </div>
         </section>
       )}

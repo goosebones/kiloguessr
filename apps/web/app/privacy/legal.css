@@ -1,0 +1,43 @@
+.legal {
+  max-width: 62ch;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-size: 15px;
+  line-height: 1.65;
+}
+.legal-lede {
+  font-size: 17px;
+  color: var(--ink);
+}
+.legal h2 {
+  font-family: var(--display);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-top: 10px;
+}
+.legal ul {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 20px;
+}
+.legal p,
+.legal li {
+  color: var(--muted);
+}
+.legal b {
+  color: var(--ink);
+}
+.legal a {
+  color: var(--accent);
+}
+.legal-updated {
+  font-family: var(--mono);
+  font-size: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}

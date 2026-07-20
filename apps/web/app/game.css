@@ -208,6 +208,15 @@
   color: var(--bad);
   margin-bottom: 2px;
 }
+.cover-lede {
+  max-width: 34ch;
+  text-align: center;
+  font-size: 14px;
+  color: var(--muted);
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 6px 14px;
+}
 .start-btn {
   font-family: var(--display);
   font-size: 24px;
