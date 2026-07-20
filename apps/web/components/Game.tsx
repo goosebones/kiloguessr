@@ -127,7 +127,7 @@ export default function Game() {
         setTimerText(
           s.timer === 1 ? enduranceLeft.current.toFixed(1) + "s" : "0.0s",
         );
-        requestAnimationFrame(() => startRef.current?.focus());
+        requestAnimationFrame(() => startRef.current?.focus({ preventScroll: true }));
       }
       return next;
     },
@@ -149,7 +149,7 @@ export default function Game() {
     setGameOverInfo(null);
     setPhase("ask");
     cardStart.current = Date.now();
-    requestAnimationFrame(() => answerRef.current?.focus());
+    requestAnimationFrame(() => answerRef.current?.focus({ preventScroll: true }));
   }, [started]);
 
   const gameOver = useCallback(() => {
@@ -257,7 +257,7 @@ export default function Game() {
       }
       // rapid fire: deal the next card immediately
       newCard(card, s, true);
-      requestAnimationFrame(() => answerRef.current?.focus());
+      requestAnimationFrame(() => answerRef.current?.focus({ preventScroll: true }));
     },
     [answer, breakdownText, card, gameOver, newCard, phase, playerPlates, stats],
   );
@@ -327,7 +327,7 @@ export default function Game() {
     const dealt = newCard(null, next, started);
     if (started) {
       cardStart.current = Date.now();
-      requestAnimationFrame(() => answerRef.current?.focus());
+      requestAnimationFrame(() => answerRef.current?.focus({ preventScroll: true }));
     }
     return dealt;
   };

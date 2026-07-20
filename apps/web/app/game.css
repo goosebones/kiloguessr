@@ -84,6 +84,8 @@
   display: block;
   width: 100%;
   height: auto;
+  /* keep the bar from ballooning on a wide screen */
+  max-height: 300px;
 }
 .timer {
   position: absolute;
@@ -553,9 +555,12 @@ summary:focus-visible {
   .settings {
     gap: 12px;
   }
-  /* give the bar as much width as the screen allows */
+  /* give the bar as much of the screen as it can take */
   .stage {
     padding: 8px 6px 0;
+  }
+  .stage svg {
+    max-height: 42vh;
   }
   .stat {
     min-width: 54px;

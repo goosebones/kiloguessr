@@ -195,7 +195,7 @@ export default function RankedPage() {
       setStage("playing");
       cardShownAt.current = Date.now();
       if (!isLoadMode(modeRef.current)) {
-        requestAnimationFrame(() => inputRef.current?.focus());
+        requestAnimationFrame(() => inputRef.current?.focus({ preventScroll: true }));
       }
       return;
     }
