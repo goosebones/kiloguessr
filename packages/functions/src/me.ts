@@ -1,6 +1,7 @@
 import {
   GetCommand,
   PutCommand,
+  QueryCommand,
   TransactWriteCommand,
   UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
@@ -14,6 +15,35 @@ const DENYLIST = new Set([
   "admin", "administrator", "mod", "moderator", "root", "support",
   "staff", "official", "kiloguessr", "liftinglookup",
 ]);
+
+/**
+ * Board rows cache the lifter's handle/instagram for fast reads, so a rename
+ * must refresh every board they appear on (found via their LBREF pointers).
+ */
+async function syncBoardRows(sub: string, handle: string, instagram: string | null) {
+  const refs = await ddb.send(
+    new QueryCommand({
+      TableName: TABLE,
+      KeyConditionExpression: "pk = :pk AND begins_with(sk, :sk)",
+      ExpressionAttributeValues: { ":pk": `USER#${sub}`, ":sk": "LBREF#" },
+    }),
+  );
+  await Promise.all(
+    (refs.Items ?? []).map((ref) =>
+      ddb
+        .send(
+          new UpdateCommand({
+            TableName: TABLE,
+            Key: { pk: `LBROW#${ref.mode}#${ref.window}`, sk: `USER#${sub}` },
+            UpdateExpression: "SET handle = :h, instagram = :ig",
+            ConditionExpression: "attribute_exists(rv)",
+            ExpressionAttributeValues: { ":h": handle, ":ig": instagram },
+          }),
+        )
+        .catch(() => {}),
+    ),
+  );
+}
 
 async function readProfile(sub: string) {
   const res = await ddb.send(
@@ -139,5 +169,16 @@ export const patch = async (event: APIGatewayProxyEventV2WithJWTAuthorizer) => {
     }
   }
 
-  return json(200, publicProfile(await readProfile(sub)));
+  const finalProfile = await readProfile(sub);
+  if (
+    (body.handle !== undefined || body.instagram !== undefined) &&
+    finalProfile?.handle
+  ) {
+    await syncBoardRows(
+      sub,
+      finalProfile.handle as string,
+      (finalProfile.instagram as string) ?? null,
+    );
+  }
+  return json(200, publicProfile(finalProfile));
 };

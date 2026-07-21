@@ -451,6 +451,14 @@ export default function RankedPage() {
               />
             </details>
           )}
+          {stage === "armed" && (
+            <a
+              className="check-btn linkish play-this"
+              href={`/leaderboards?mode=${modeRef.current}`}
+            >
+              {MODE_LABELS[modeRef.current]} leaderboard
+            </a>
+          )}
         </>
       )}
 
