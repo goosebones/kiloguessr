@@ -216,11 +216,19 @@
   text-decoration: none;
   border-bottom: 1px solid var(--line);
 }
-.board-table .ig {
+.lifter-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+/* icon-only Instagram link in a board row */
+.board-table .ig-icon {
   color: var(--muted);
-  font-size: 12px;
-  margin-left: 8px;
   border: none;
+  display: inline-flex;
+}
+.board-table .ig-icon:hover {
+  color: var(--accent);
 }
 .board-scroll {
   overflow-x: auto;

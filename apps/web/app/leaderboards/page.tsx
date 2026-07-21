@@ -10,6 +10,7 @@ import {
   type RankedMode,
 } from "@kiloguessr/engine";
 import Footer from "../../components/Footer";
+import InstagramLink from "../../components/InstagramLink";
 import TopNav from "../../components/TopNav";
 import { API_URL } from "../../lib/auth";
 import "../game.css";
@@ -124,17 +125,10 @@ export default function LeaderboardsPage() {
                   <tr key={r.handle}>
                     <td className="rank">{r.rank}</td>
                     <td>
-                      <a href={`/u/${r.handle}`}>{r.handle}</a>
-                      {r.instagram && (
-                        <a
-                          className="ig"
-                          href={`https://instagram.com/${r.instagram}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          IG
-                        </a>
-                      )}
+                      <span className="lifter-cell">
+                        <a href={`/u/${r.handle}`}>{r.handle}</a>
+                        {r.instagram && <InstagramLink name={r.instagram} iconOnly />}
+                      </span>
                     </td>
                     <td className="score">{formatScore(mode, r.score)}</td>
                   </tr>
