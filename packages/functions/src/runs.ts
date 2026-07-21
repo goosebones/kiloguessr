@@ -213,29 +213,27 @@ export const submit = async (event: APIGatewayProxyEventV2WithJWTAuthorizer) => 
     );
   }
 
-  // Where this lands on the all-time board
-  let rankPos: number | null = null;
+  // Where the score just played would land on the all-time board — count the
+  // board scores strictly better than THIS run (the board keeps each lifter's
+  // best, so a worse run shouldn't inherit that best's rank).
+  const runSortKey = boardSortKey(mode, result.score, submittedAt);
+  const ahead = await ddb.send(
+    new QueryCommand({
+      TableName: TABLE,
+      IndexName: "gsi1",
+      KeyConditionExpression: "gsi1pk = :pk AND gsi1sk > :sk",
+      ExpressionAttributeValues: { ":pk": `LB#${mode}#ALL`, ":sk": runSortKey },
+      Select: "COUNT",
+    }),
+  );
+  const rankPos = (ahead.Count ?? 0) + 1;
+
   const mine = await ddb.send(
     new GetCommand({
       TableName: TABLE,
       Key: { pk: `LBROW#${mode}#ALL`, sk: `USER#${sub}` },
     }),
   );
-  if (mine.Item?.gsi1sk) {
-    const ahead = await ddb.send(
-      new QueryCommand({
-        TableName: TABLE,
-        IndexName: "gsi1",
-        KeyConditionExpression: "gsi1pk = :pk AND gsi1sk > :sk",
-        ExpressionAttributeValues: {
-          ":pk": `LB#${mode}#ALL`,
-          ":sk": mine.Item.gsi1sk,
-        },
-        Select: "COUNT",
-      }),
-    );
-    rankPos = (ahead.Count ?? 0) + 1;
-  }
 
   return json(200, {
     ranked: true,

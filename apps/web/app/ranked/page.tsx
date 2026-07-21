@@ -379,8 +379,9 @@ export default function RankedPage() {
               <div className="result-rank">
                 <b>{result.rankPos ? `#${result.rankPos}` : "—"}</b>
                 <span>
-                  all-time
-                  {result.isPersonalBest ? " · new personal best 🏆" : ""}
+                  {result.isPersonalBest
+                    ? "all-time · new personal best 🏆"
+                    : "where this run ranks all-time"}
                 </span>
               </div>
               <button className="check-btn" onClick={() => arm(result.mode!)}>
