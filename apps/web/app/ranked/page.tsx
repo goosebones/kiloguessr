@@ -209,6 +209,7 @@ export default function RankedPage() {
   useEffect(() => {
     if (stage !== "countdown") return;
     if (count <= 0) {
+      setAnswer("");
       setStage("playing");
       cardShownAt.current = Date.now();
       if (!isLoadMode(modeRef.current)) {
@@ -417,150 +418,172 @@ export default function RankedPage() {
       )}
 
       {(stage === "armed" || stage === "countdown") && (
-        <>
-          <section className="stage" aria-label="Ready to lift">
-            <div className="target">
-              <span>{MODE_LABELS[modeRef.current]}</span>
-            </div>
-            <Barbell plates={[]} collars={false} hidden />
-            <div className="cover">
-              {stage === "armed" ? (
-                <button className="start-btn" onClick={() => setStage("countdown")}>
-                  Load the bar
-                </button>
-              ) : (
-                <div className="countdown" aria-live="assertive">
-                  {count}
-                </div>
-              )}
-            </div>
-            <div className="prompt">
-              {stage === "armed" ? "Press start when you're ready" : "Get set…"}
-            </div>
-          </section>
-          {stage === "armed" && isLoadMode(modeRef.current) && (
-            <details className="legend" style={{ alignSelf: "center" }}>
-              <summary>Customize plate keys</summary>
-              <KeybindEditor
-                binds={binds}
-                smallest={RANKED_SETTINGS.smallest}
-                onChange={(next) => {
-                  setBinds(next);
-                  saveKeybinds(next);
+        <section className="stage" aria-label="Ready to lift">
+          <div className="target">
+            <span>{MODE_LABELS[modeRef.current]}</span>
+          </div>
+          <Barbell plates={[]} collars={false} hidden />
+          <div className="cover">
+            {stage === "armed" ? (
+              <button
+                className="start-btn"
+                onClick={() => {
+                  // focus the input inside the tap so mobile opens the keyboard
+                  // now and keeps it up through the countdown into the first card
+                  if (!isLoadMode(modeRef.current)) {
+                    inputRef.current?.focus({ preventScroll: true });
+                  }
+                  setStage("countdown");
                 }}
-              />
-            </details>
-          )}
-          {stage === "armed" && (
-            <a
-              className="check-btn linkish play-this"
-              href={`/leaderboards?mode=${modeRef.current}`}
-            >
-              {MODE_LABELS[modeRef.current]} leaderboard
-            </a>
-          )}
-        </>
+              >
+                Load the bar
+              </button>
+            ) : (
+              <div className="countdown" aria-live="assertive">
+                {count}
+              </div>
+            )}
+          </div>
+          <div className="prompt">
+            {stage === "armed" ? "Press start when you're ready" : "Get set…"}
+          </div>
+        </section>
       )}
 
       {stage === "playing" && run && sidePlates && (
-        <>
-          <section className={`stage ${flash}`} aria-label="Loaded barbell">
-            <div className={`timer ${endurance && clock <= 10000 ? "low" : ""}`}>
-              {(clock / 1000).toFixed(1)}s
+        <section className={`stage ${flash}`} aria-label="Loaded barbell">
+          <div className={`timer ${endurance && clock <= 10000 ? "low" : ""}`}>
+            {(clock / 1000).toFixed(1)}s
+          </div>
+          <div className="target">
+            <span>Good lifts</span>
+            <b>{endurance ? hits : `${hits}/${SPRINT_TARGET}`}</b>
+          </div>
+          {load && (
+            <div className="target target-second">
+              <span>Target</span>
+              <b>{fmt(target)} kg</b>
             </div>
-            <div className="target">
-              <span>Good lifts</span>
-              <b>{endurance ? hits : `${hits}/${SPRINT_TARGET}`}</b>
-            </div>
-            {load && (
-              <div className="target target-second">
-                <span>Target</span>
-                <b>{fmt(target)} kg</b>
-              </div>
-            )}
-            <Barbell plates={shown} collars={!load || plates.length > 0} />
-            <div className={`prompt ${!load ? "readout" : ""}`}>
-              {load
-                ? "Plate keys load · Backspace undoes · Enter submits"
-                : describeSide(sidePlates)}
-            </div>
-          </section>
+          )}
+          <Barbell plates={shown} collars={!load || plates.length > 0} />
+          <div className={`prompt ${!load ? "readout" : ""}`}>
+            {load
+              ? "Plate keys load · Backspace undoes · Enter submits"
+              : describeSide(sidePlates)}
+          </div>
+        </section>
+      )}
 
-          <section className="console">
-            {load ? (
-              <>
-                <div className="rack" aria-label="Plate rack">
-                  {RACK.map((p) => (
-                    <div className="rack-slot" key={p.kg}>
-                      <button
-                        className="plate-btn"
-                        style={{ background: p.fill, borderColor: p.stroke, color: p.ink }}
-                        aria-label={`Add a ${fmt(p.kg)} kg plate`}
-                        onClick={() => addPlate(p.kg)}
-                      >
-                        {fmt(p.kg)}
-                      </button>
-                      <span className="key-hint">{binds[String(p.kg)] || "—"}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="answer-row load-actions">
-                  <button
-                    className="btn-secondary"
-                    onClick={() => {
-                      platesRef.current = [];
-                      setPlates([]);
-                    }}
-                  >
-                    Clear
-                  </button>
-                  <button className="btn-secondary" onClick={undoPlate}>
-                    Undo
-                  </button>
-                  <button className="check-btn" onClick={submitAnswer}>
-                    Submit
-                  </button>
-                </div>
-              </>
-            ) : (
-              <div className="answer-row">
-                <div className="answer-field">
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    inputMode="decimal"
-                    enterKeyHint="go"
-                    autoComplete="off"
-                    autoCorrect="off"
-                    autoCapitalize="off"
-                    spellCheck={false}
-                    placeholder="0"
-                    aria-label="Total weight in kilograms"
-                    value={answer}
-                    onChange={(e) => setAnswer(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.repeat) submitAnswer();
-                    }}
-                  />
-                  <span className="unit">kg</span>
-                </div>
-                <button
-                  className="check-btn"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={submitAnswer}
-                >
-                  Check
-                </button>
+      {/* Read-mode input, mounted from arming through play as one element so the
+          keyboard opened on the Load-the-bar tap stays up into the first card. */}
+      {!load &&
+        (stage === "armed" || stage === "countdown" || stage === "playing") && (
+          <section className="console" key="read-console">
+            <div className="answer-row">
+              <div className="answer-field">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  inputMode="decimal"
+                  enterKeyHint="go"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
+                  placeholder="0"
+                  aria-label="Total weight in kilograms"
+                  value={answer}
+                  onChange={(e) => setAnswer(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.repeat) submitAnswer();
+                  }}
+                />
+                <span className="unit">kg</span>
               </div>
+              <button
+                className="check-btn"
+                disabled={stage !== "playing"}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={submitAnswer}
+              >
+                Check
+              </button>
+            </div>
+            {stage === "playing" && (
+              <p className="breakdown">
+                {endurance
+                  ? `${hits} good · ${misses} missed`
+                  : `${SPRINT_TARGET - hits} to go · ${misses} missed`}
+                {" · typing 187 counts as 187.5"}
+              </p>
             )}
-            <p className="breakdown">
-              {endurance
-                ? `${hits} good · ${misses} missed`
-                : `${SPRINT_TARGET - hits} to go · ${misses} missed`}
-              {!load && " · typing 187 counts as 187.5"}
-            </p>
           </section>
-        </>
+        )}
+
+      {stage === "armed" && isLoadMode(modeRef.current) && (
+        <details className="legend" style={{ alignSelf: "center" }}>
+          <summary>Customize plate keys</summary>
+          <KeybindEditor
+            binds={binds}
+            smallest={RANKED_SETTINGS.smallest}
+            onChange={(next) => {
+              setBinds(next);
+              saveKeybinds(next);
+            }}
+          />
+        </details>
+      )}
+
+      {stage === "armed" && (
+        <a
+          className="check-btn linkish play-this"
+          href={`/leaderboards?mode=${modeRef.current}`}
+        >
+          {MODE_LABELS[modeRef.current]} leaderboard
+        </a>
+      )}
+
+      {/* Load-mode console: rack + Clear/Undo/Submit, play only */}
+      {stage === "playing" && run && sidePlates && load && (
+        <section className="console">
+          <div className="rack" aria-label="Plate rack">
+            {RACK.map((p) => (
+              <div className="rack-slot" key={p.kg}>
+                <button
+                  className="plate-btn"
+                  style={{ background: p.fill, borderColor: p.stroke, color: p.ink }}
+                  aria-label={`Add a ${fmt(p.kg)} kg plate`}
+                  onClick={() => addPlate(p.kg)}
+                >
+                  {fmt(p.kg)}
+                </button>
+                <span className="key-hint">{binds[String(p.kg)] || "—"}</span>
+              </div>
+            ))}
+          </div>
+          <div className="answer-row load-actions">
+            <button
+              className="btn-secondary"
+              onClick={() => {
+                platesRef.current = [];
+                setPlates([]);
+              }}
+            >
+              Clear
+            </button>
+            <button className="btn-secondary" onClick={undoPlate}>
+              Undo
+            </button>
+            <button className="check-btn" onClick={submitAnswer}>
+              Submit
+            </button>
+          </div>
+          <p className="breakdown">
+            {endurance
+              ? `${hits} good · ${misses} missed`
+              : `${SPRINT_TARGET - hits} to go · ${misses} missed`}
+          </p>
+        </section>
       )}
 
       {error && (
