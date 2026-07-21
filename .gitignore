@@ -7,3 +7,4 @@ sst-env.d.ts
 .env.*
 .DS_Store
 *.tsbuildinfo
+method-green.png

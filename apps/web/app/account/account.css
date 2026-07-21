@@ -10,6 +10,12 @@
   flex-direction: column;
   gap: 14px;
 }
+/* text-only links (forgot password, back to sign in) shrink to their text
+   so the click target isn't the full card width */
+.account .card > .link-btn {
+  align-self: center;
+  width: fit-content;
+}
 .account .tab-row {
   display: flex;
   gap: 8px;
@@ -74,15 +80,10 @@
   width: 14px;
 }
 .account .pw-rules li.ok {
-  color: #3a7d44;
+  color: var(--accent);
 }
 .account .pw-rules li.bad {
   color: var(--bad);
-}
-@media (prefers-color-scheme: dark) {
-  .account .pw-rules li.ok {
-    color: #6fbf7d;
-  }
 }
 
 .account-note {

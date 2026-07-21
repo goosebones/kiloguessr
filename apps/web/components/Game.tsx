@@ -8,6 +8,7 @@ import {
   PRACTICE_ENDURANCE,
   Q,
   answersMatch,
+  describeSide,
   fmt,
   generateCard,
   loadedTotalQ,
@@ -49,6 +50,7 @@ const DEFAULT_SETTINGS: UiSettings = {
 
 const MAX_LOADED_PLATES = 14;
 const E = PRACTICE_ENDURANCE;
+const HINT = "Type the total. Typing 187 counts as 187.5.";
 
 function loadSettings(): UiSettings {
   try {
@@ -82,9 +84,7 @@ export default function Game() {
   const [stats, setStats] = useState({ attempts: 0, correct: 0, streak: 0, best: 0 });
   const [times, setTimes] = useState<number[]>([]);
   const [verdict, setVerdict] = useState<{ kind: "good" | "bad"; html: string } | null>(null);
-  const [breakdown, setBreakdown] = useState(
-    "Bar + plates on both sides + collars. Press Enter to check. Typing 187 counts as 187.5.",
-  );
+  const [breakdown, setBreakdown] = useState(HINT);
   const [judged, setJudged] = useState<"" | "judged-good" | "judged-bad">("");
   const [timerText, setTimerText] = useState("0.0s");
   const [timerLow, setTimerLow] = useState(false);
@@ -184,11 +184,6 @@ export default function Game() {
     return () => clearInterval(id);
   }, [phase, gameOver]);
 
-  const breakdownText = useCallback((c: Card, s: UiSettings) => {
-    const parts = [`${s.bar} kg bar`, `2 × (${c.sidePlates.map(fmt).join(" + ")})`];
-    if (s.collars) parts.push(`2 × ${COLLAR_KG} collars`);
-    return parts.join("  +  ");
-  }, []);
 
   const judge = useCallback(
     (gaveUp: boolean) => {
@@ -241,7 +236,7 @@ export default function Game() {
         });
       }
       setStats(nextStats);
-      setBreakdown(breakdownText(card, s));
+      setBreakdown(HINT);
       setJudged("");
       requestAnimationFrame(() =>
         setJudged(correct ? "judged-good" : "judged-bad"),
@@ -261,7 +256,7 @@ export default function Game() {
       newCard(card, s, true);
       requestAnimationFrame(() => answerRef.current?.focus({ preventScroll: true }));
     },
-    [answer, breakdownText, card, gameOver, newCard, phase, playerPlates, stats],
+    [answer, card, gameOver, newCard, phase, playerPlates, stats],
   );
 
   const addPlate = useCallback(
@@ -370,10 +365,12 @@ export default function Game() {
           hidden={!showPlates}
         />
         {phase !== "ready" && (
-          <div className="prompt">
+          <div className={`prompt ${!isLoad ? "readout" : ""}`}>
             {isLoad
               ? "Plate keys load · Backspace undoes · Enter submits"
-              : "What's on the bar?"}
+              : card
+                ? describeSide(card.sidePlates)
+                : ""}
           </div>
         )}
         {phase === "ready" && (

@@ -9,6 +9,7 @@ import {
   RANKED_SETTINGS,
   SPRINT_TARGET,
   answersMatch,
+  describeSide,
   fmt,
   formatScore,
   isEndurance,
@@ -418,10 +419,10 @@ export default function RankedPage() {
               </div>
             )}
             <Barbell plates={shown} collars={!load || plates.length > 0} />
-            <div className="prompt">
+            <div className={`prompt ${!load ? "readout" : ""}`}>
               {load
                 ? "Plate keys load · Backspace undoes · Enter submits"
-                : "What's on the bar?"}
+                : describeSide(sidePlates)}
             </div>
           </section>
 

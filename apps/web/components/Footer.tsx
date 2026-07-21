@@ -10,8 +10,19 @@ export default function Footer() {
       <nav className="footer-legal">
         <a href="/privacy">Privacy</a>
         <a href="/terms">Terms</a>
-        <span>KiloGuessr — kg plate math for powerlifters</span>
       </nav>
+      <a
+        className="footer-brand"
+        href="https://instagram.com/methodspottingloading"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/method-96.png" alt="" width={26} height={26} />
+        <span>
+          presented by <b>Method Spotting &amp; Loading</b>
+        </span>
+      </a>
     </footer>
   );
 }

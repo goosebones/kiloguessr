@@ -36,3 +36,19 @@ export const MAXES = [75, 125, 175, 225, 275, 325, 375, 425, 475, 525];
 /** Format a kg value without trailing zeros ("187.5", "61.25", "100"). */
 export const fmt = (kg: number): string =>
   (Math.round(kg * 100) / 100).toString();
+
+/**
+ * One side's plates as loader shorthand, biggest first:
+ * [25,25,5,2.5] → "25(2) - 5 - 2.5". A count is shown only when >1.
+ */
+export function describeSide(plates: number[]): string {
+  const groups: string[] = [];
+  for (let i = 0; i < plates.length; ) {
+    let j = i;
+    while (j < plates.length && plates[j] === plates[i]) j++;
+    const count = j - i;
+    groups.push(count > 1 ? `${fmt(plates[i])}(${count})` : fmt(plates[i]));
+    i = j;
+  }
+  return groups.join(" - ");
+}

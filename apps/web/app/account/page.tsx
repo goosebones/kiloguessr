@@ -206,9 +206,16 @@ export default function AccountPage() {
       {mode === "loading" && <p className="account-note">Loading…</p>}
 
       {(mode === "signin" || mode === "signup") && (
-        <section className="card">
+        <form
+          className="card"
+          onSubmit={(e) => {
+            e.preventDefault();
+            (mode === "signup" ? doSignUp : doSignIn)();
+          }}
+        >
           <div className="tab-row">
             <button
+              type="button"
               className="seg-tab"
               aria-pressed={mode === "signin"}
               onClick={() => setMode("signin")}
@@ -216,6 +223,7 @@ export default function AccountPage() {
               Sign in
             </button>
             <button
+              type="button"
               className="seg-tab"
               aria-pressed={mode === "signup"}
               onClick={() => setMode("signup")}
@@ -243,6 +251,7 @@ export default function AccountPage() {
           </label>
           {mode === "signup" && <PasswordRules password={password} />}
           <button
+            type="submit"
             className="check-btn"
             disabled={
               busy ||
@@ -250,12 +259,12 @@ export default function AccountPage() {
               !password ||
               (mode === "signup" && !passwordOk(password))
             }
-            onClick={mode === "signup" ? doSignUp : doSignIn}
           >
             {mode === "signup" ? "Create account" : "Sign in"}
           </button>
           {mode === "signin" && (
             <button
+              type="button"
               className="link-btn"
               onClick={() => {
                 setError("");
@@ -266,11 +275,17 @@ export default function AccountPage() {
               Forgot your password?
             </button>
           )}
-        </section>
+        </form>
       )}
 
       {mode === "forgot" && (
-        <section className="card">
+        <form
+          className="card"
+          onSubmit={(e) => {
+            e.preventDefault();
+            doForgot();
+          }}
+        >
           <p className="account-note">
             Enter your email and we&apos;ll send you a code to set a new password.
           </p>
@@ -283,17 +298,23 @@ export default function AccountPage() {
               onChange={(e) => setEmail(e.target.value)}
             />
           </label>
-          <button className="check-btn" disabled={busy || !email} onClick={doForgot}>
+          <button type="submit" className="check-btn" disabled={busy || !email}>
             Send reset code
           </button>
-          <button className="link-btn" onClick={() => setMode("signin")}>
+          <button type="button" className="link-btn" onClick={() => setMode("signin")}>
             Back to sign in
           </button>
-        </section>
+        </form>
       )}
 
       {mode === "reset" && (
-        <section className="card">
+        <form
+          className="card"
+          onSubmit={(e) => {
+            e.preventDefault();
+            doReset();
+          }}
+        >
           <p className="account-note">{notice || `Enter the code we emailed to ${email}.`}</p>
           <label>
             Reset code
@@ -314,20 +335,26 @@ export default function AccountPage() {
           </label>
           <PasswordRules password={password} />
           <button
+            type="submit"
             className="check-btn"
             disabled={busy || !code || !passwordOk(password)}
-            onClick={doReset}
           >
             Set new password
           </button>
-          <button className="link-btn" onClick={doForgot} disabled={busy}>
+          <button type="button" className="link-btn" onClick={doForgot} disabled={busy}>
             Send a new code
           </button>
-        </section>
+        </form>
       )}
 
       {mode === "confirm" && (
-        <section className="card">
+        <form
+          className="card"
+          onSubmit={(e) => {
+            e.preventDefault();
+            doConfirm();
+          }}
+        >
           <p className="account-note">{notice || `Enter the code we emailed to ${email}.`}</p>
           <label>
             Verification code
@@ -337,10 +364,10 @@ export default function AccountPage() {
               onChange={(e) => setCode(e.target.value)}
             />
           </label>
-          <button className="check-btn" disabled={busy || !code} onClick={doConfirm}>
+          <button type="submit" className="check-btn" disabled={busy || !code}>
             Verify
           </button>
-        </section>
+        </form>
       )}
 
       {mode === "profile" && profile && (

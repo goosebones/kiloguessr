@@ -6,6 +6,11 @@ const RED_KG = 25;
 /** Reds only get a tally once they're genuinely slow to count by eye. */
 const RED_TALLY_FROM = 4;
 
+// Deliberately darker than the chrome change plates (#b9bec6) so the collar
+// never reads as a small plate.
+const COLLAR_FILL = "#565c5a";
+const COLLAR_STROKE = "#333837";
+
 /**
  * Fixed drawing box. The canvas dimensions never change between cards — a
  * viewBox that tracked content width made the rendered height jump card to
@@ -67,8 +72,7 @@ export default function Barbell({
       </defs>
 
       <g transform={scale < 1 ? `scale(${scale})` : undefined}>
-        <rect x="20" y={cy - 7} width="152" height="14" fill="url(#shaftFade)" />
-        <rect x="172" y={cy - 32} width="16" height="64" rx="3" fill="var(--steel-dark)" />
+        <rect x="20" y={cy - 7} width="168" height="14" fill="url(#shaftFade)" />
         <rect
           x="188" y={cy - 11} width={sleeveEnd - 188} height="22" rx="4"
           fill="var(--steel)"
@@ -100,11 +104,11 @@ export default function Barbell({
           <g>
             <rect
               x={collarX} y={cy - 30} width="22" height="60" rx="4"
-              fill="#b9bec6" stroke="#83898f" strokeWidth="1.5"
+              fill={COLLAR_FILL} stroke={COLLAR_STROKE} strokeWidth="1.5"
             />
             <rect
               x={collarX + 7} y={cy - 46} width="8" height="17" rx="2"
-              fill="#b9bec6" stroke="#83898f" strokeWidth="1.5"
+              fill={COLLAR_FILL} stroke={COLLAR_STROKE} strokeWidth="1.5"
             />
           </g>
         )}

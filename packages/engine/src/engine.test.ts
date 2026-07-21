@@ -3,6 +3,7 @@ import {
   answersMatch,
   baseQ,
   decomposeSide,
+  describeSide,
   fmt,
   generateCard,
   loadedTotalQ,
@@ -21,6 +22,16 @@ describe("fmt", () => {
     expect(fmt(61.25)).toBe("61.25");
     expect(fmt(100)).toBe("100");
     expect(fmt(2.5)).toBe("2.5");
+  });
+});
+
+describe("describeSide", () => {
+  it("groups repeats with a count, biggest first", () => {
+    expect(describeSide([25, 25, 5, 2.5])).toBe("25(2) - 5 - 2.5");
+    expect(describeSide([25, 25, 25, 25, 25, 10, 2.5])).toBe("25(5) - 10 - 2.5");
+    expect(describeSide([20])).toBe("20");
+    expect(describeSide([1.25, 1.25])).toBe("1.25(2)");
+    expect(describeSide([])).toBe("");
   });
 });
 

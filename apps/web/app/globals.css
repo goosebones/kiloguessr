@@ -1,40 +1,25 @@
-/* KiloGuessr design tokens — ported from the prototype */
+/* KiloGuessr — Method Spotting & Loading livery: black / green / white / grey.
+   Forced dark, matching the logo's black ground. */
 :root {
-  --bg: #eff0ee;
-  --surface: #f8f9f7;
-  --line: #d9dbd6;
-  --ink: #1a1c20;
-  --muted: #5d636c;
-  --accent: #c43229;
-  --steel: #a7adb5;
-  --steel-dark: #7e848d;
-  --good: #1a1c20;
-  --bad: #c43229;
-  --good-glow: rgba(26, 28, 32, 0.35);
-  --bad-glow: rgba(196, 50, 41, 0.45);
-  --chip-active-bg: #1a1c20;
-  --chip-active-ink: #f8f9f7;
-  --display: "Avenir Next Condensed", "Arial Narrow", "Helvetica Neue", system-ui, sans-serif;
+  color-scheme: dark;
+  --bg: #0d0f0e;             /* logo black, a hair off pure */
+  --surface: #171a17;
+  --line: #2a2f2a;
+  --ink: #eef1e8;            /* logo's cream white */
+  --muted: #8d958c;
+  --accent: #2fb84e;         /* vivid Method green, pops on black */
+  --accent-ink: #08120a;     /* near-black text on a green fill */
+  --steel: #8a908f;
+  --steel-dark: #656b6a;
+  --good: #f2f4ee;           /* good lift = white referee-light flash */
+  --bad: #e05046;            /* no lift = red */
+  --good-glow: rgba(255, 255, 255, 0.5);
+  --bad-glow: rgba(224, 80, 70, 0.5);
+  --chip-active-bg: #eef1e8;
+  --chip-active-ink: #0d0f0e;
+  --display: var(--font-display), "Arial Narrow", "Helvetica Neue", sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --body: system-ui, -apple-system, "Segoe UI", sans-serif;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #14161a;
-    --surface: #1b1e23;
-    --line: #2b2f36;
-    --ink: #ecedef;
-    --muted: #979ea8;
-    --accent: #d5453b;
-    --steel: #878e97;
-    --steel-dark: #666d76;
-    --good: #ecedef;
-    --bad: #d5453b;
-    --good-glow: rgba(255, 255, 255, 0.5);
-    --bad-glow: rgba(213, 69, 59, 0.55);
-    --chip-active-bg: #ecedef;
-    --chip-active-ink: #14161a;
-  }
+  --body: var(--font-body), system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 * {

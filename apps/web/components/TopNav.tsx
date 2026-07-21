@@ -34,7 +34,11 @@ export default function TopNav({ active }: { active?: "ranked" | "account" }) {
         </span>
       </a>
       <nav className="topnav-links" aria-label="Primary">
-        <a href="/ranked" aria-current={active === "ranked" ? "page" : undefined}>
+        <a
+          href="/ranked"
+          className="nav-cta"
+          aria-current={active === "ranked" ? "page" : undefined}
+        >
           Ranked
         </a>
         <a href={accountHref} aria-current={active === "account" ? "page" : undefined}>
