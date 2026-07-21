@@ -375,7 +375,7 @@ export default function AccountPage() {
           <p className="account-note">
             {profile.handle
               ? `Signed in as @${profile.handle}`
-              : "Claim your handle — it's your name on the leaderboards."}
+              : "Claim your handle, it's your name on the leaderboards."}
           </p>
           <label>
             Handle

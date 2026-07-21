@@ -20,7 +20,7 @@ export default function Footer() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/method-96.png" alt="" width={26} height={26} />
         <span>
-          presented by <b>Method Spotting &amp; Loading</b>
+          created by <b>Method Spotting &amp; Loading</b>
         </span>
       </a>
     </footer>

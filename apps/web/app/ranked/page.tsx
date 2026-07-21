@@ -327,7 +327,7 @@ export default function RankedPage() {
 
       {stage === "nohandle" && (
         <section className="card">
-          <p className="account-note">Claim a handle first — it&apos;s your name on the leaderboards.</p>
+          <p className="account-note">Claim a handle first, it&apos;s your name on the leaderboards.</p>
           <a className="check-btn linkish" href="/account">Claim a handle</a>
         </section>
       )}

@@ -204,7 +204,7 @@ export default function Game() {
               if (Date.now() - judgedAt.current > 500)
                 setBreakdown("Type the total weight first.");
             } else {
-              setBreakdown("That's not a number — try again.");
+              setBreakdown("That's not a number - try again.");
             }
             return;
           }
@@ -226,13 +226,13 @@ export default function Game() {
         }
         setVerdict({
           kind: "good",
-          html: `Good lift — ${fmt(total)} kg in ${(elapsed / 1000).toFixed(1)}s`,
+          html: `Good lift - ${fmt(total)}kg in ${(elapsed / 1000).toFixed(1)}s`,
         });
       } else {
         nextStats.streak = 0;
         setVerdict({
           kind: "bad",
-          html: `${gaveUp ? "Passed" : "No lift"} — it was ${fmt(total)} kg`,
+          html: `${gaveUp ? "Passed" : "No lift"} - it was ${fmt(total)}kg`,
         });
       }
       setStats(nextStats);
@@ -385,7 +385,7 @@ export default function Game() {
                 <p className="cover-lede">
                   {isLoad
                     ? "Build the bar to hit the target weight."
-                    : "Read the loaded bar and type the total — bar, both sides, and collars."}
+                    : "Read the plates and type the total weight on the bar."}
                 </p>
               )}
               <button ref={startRef} className="start-btn" onClick={startCard}>

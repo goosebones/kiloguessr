@@ -14,7 +14,7 @@ export default function NotFound() {
       </header>
       <section className="card">
         <p className="account-note">
-          There&apos;s nothing loaded on this page — the link may be old or mistyped.
+          There&apos;s nothing loaded on this page. The link may be old or mistyped.
         </p>
         <a className="check-btn linkish" href="/">Back to the bar</a>
       </section>

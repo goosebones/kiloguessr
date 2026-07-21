@@ -21,12 +21,12 @@ const body = Barlow({
 });
 
 const DESCRIPTION =
-  "Flash-card training for kilo plate math. Read a loaded barbell, type the total, and climb the leaderboards. A Method Spotting & Loading joint.";
+  "Flash-card training for kilo plate math. Read a loaded barbell, type the total, and climb the leaderboards. Created by Method Spotting & Loading";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://kiloguessr.liftinglookup.com"),
   title: {
-    default: "KiloGuessr — kg plate math for powerlifters",
+    default: "KiloGuessr - kg plate math game for powerlifters",
     template: "%s · KiloGuessr",
   },
   description: DESCRIPTION,
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "KiloGuessr",
-    title: "KiloGuessr — kg plate math for powerlifters",
+    title: "KiloGuessr - kg plate math game for powerlifters",
     description: DESCRIPTION,
   },
   twitter: { card: "summary", title: "KiloGuessr", description: DESCRIPTION },

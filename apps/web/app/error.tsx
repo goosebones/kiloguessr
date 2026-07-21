@@ -16,8 +16,8 @@ export default function Error({ reset }: { error: Error; reset: () => void }) {
       </header>
       <section className="card">
         <p className="account-note">
-          Something broke on our end. Your practice settings and personal bests are
-          safe in this browser.
+          Something broke on our end. Lets hope the chief referee can run the meet
+          off attempt cards.
         </p>
         <button className="check-btn" onClick={reset}>
           Try again
