@@ -6,6 +6,7 @@ import {
   RANKED_MODES,
   formatScore,
   isEndurance,
+  isRankedMode,
   type RankedMode,
 } from "@kiloguessr/engine";
 import Footer from "../../components/Footer";
@@ -27,6 +28,12 @@ export default function LeaderboardsPage() {
   const [window, setWindow] = useState<"all" | "week">("all");
   const [rows, setRows] = useState<Row[] | null>(null);
   const [error, setError] = useState("");
+
+  // preselect the board when arriving from a "View leaderboard" link
+  useEffect(() => {
+    const m = new URLSearchParams(globalThis.location?.search ?? "").get("mode");
+    if (m && isRankedMode(m)) setMode(m);
+  }, []);
 
   const load = useCallback(() => {
     setRows(null);
@@ -80,6 +87,10 @@ export default function LeaderboardsPage() {
         </div>
       </section>
 
+      <a className="check-btn linkish play-this" href={`/ranked?mode=${mode}`}>
+        Play {MODE_LABELS[mode]}
+      </a>
+
       <section className="card" style={{ maxWidth: 620 }}>
         {error && (
           <>
@@ -113,7 +124,7 @@ export default function LeaderboardsPage() {
                   <tr key={r.handle}>
                     <td className="rank">{r.rank}</td>
                     <td>
-                      <a href={`/u/${r.handle}`}>@{r.handle}</a>
+                      <a href={`/u/${r.handle}`}>{r.handle}</a>
                       {r.instagram && (
                         <a
                           className="ig"

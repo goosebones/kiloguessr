@@ -14,6 +14,7 @@ import {
   formatScore,
   isEndurance,
   isLoadMode,
+  isRankedMode,
   loadedTotalQ,
   parseAnswer,
   type RankedMode,
@@ -192,6 +193,18 @@ export default function RankedPage() {
     }
   };
 
+  // deep link from a leaderboard "Play this mode" button: /ranked?mode=…
+  const autoArmed = useRef(false);
+  useEffect(() => {
+    if (stage !== "ready" || autoArmed.current) return;
+    const m = new URLSearchParams(globalThis.location?.search ?? "").get("mode");
+    if (m && isRankedMode(m)) {
+      autoArmed.current = true;
+      arm(m);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage]);
+
   // 3 · 2 · 1 · lift
   useEffect(() => {
     if (stage !== "countdown") return;
@@ -319,31 +332,8 @@ export default function RankedPage() {
         </section>
       )}
 
-      {(stage === "ready" || stage === "done") && (
+      {stage === "ready" && (
         <section className="card" style={{ maxWidth: 520 }}>
-          {result?.ranked && result.mode && (
-            <div className="run-result">
-              <b>{formatScore(result.mode, result.score ?? 0)}</b>
-              <span>
-                {isEndurance(result.mode)
-                  ? "good lifts"
-                  : `for ${SPRINT_TARGET} good lifts`}
-              </span>
-              <p className="account-note">
-                {result.correct}/{result.attempts} at{" "}
-                {Math.round((result.accuracy ?? 0) * 100)}% accuracy
-                {result.rankPos ? ` · #${result.rankPos} all-time` : ""}
-                {result.isPersonalBest ? " · new personal best" : ""}
-              </p>
-            </div>
-          )}
-          {result && !result.ranked && (
-            <p className="account-error">{result.reason ?? "That run wasn't ranked."}</p>
-          )}
-          {stage === "done" && !result && !error && (
-            <p className="account-note">Scoring your run…</p>
-          )}
-
           <div className="mode-grid">
             {RANKED_MODES.map((m) => (
               <button key={m} className="mode-card" onClick={() => arm(m)}>
@@ -363,43 +353,105 @@ export default function RankedPage() {
           <a className="check-btn linkish" href="/leaderboards">
             View leaderboards
           </a>
-          <details className="legend" style={{ alignSelf: "center" }}>
-            <summary>Customize plate keys</summary>
-            <KeybindEditor
-              binds={binds}
-              smallest={RANKED_SETTINGS.smallest}
-              onChange={(next) => {
-                setBinds(next);
-                saveKeybinds(next);
-              }}
-            />
-          </details>
+        </section>
+      )}
+
+      {stage === "done" && (
+        <section className="card results" style={{ maxWidth: 440 }}>
+          {!result && !error && <p className="account-note">Scoring your run…</p>}
+
+          {result?.ranked && result.mode && (
+            <>
+              <div className="eyebrow results-mode">{MODE_LABELS[result.mode]}</div>
+              <div className="run-result">
+                <b>{formatScore(result.mode, result.score ?? 0)}</b>
+                <span>
+                  {isEndurance(result.mode)
+                    ? "good lifts"
+                    : `for ${SPRINT_TARGET} good lifts`}
+                </span>
+              </div>
+              <p className="account-note">
+                {result.correct}/{result.attempts} at{" "}
+                {Math.round((result.accuracy ?? 0) * 100)}% accuracy
+              </p>
+              <div className="result-rank">
+                <b>{result.rankPos ? `#${result.rankPos}` : "—"}</b>
+                <span>
+                  all-time
+                  {result.isPersonalBest ? " · new personal best 🏆" : ""}
+                </span>
+              </div>
+              <button className="check-btn" onClick={() => arm(result.mode!)}>
+                Play again
+              </button>
+              <a
+                className="check-btn linkish"
+                href={`/leaderboards?mode=${result.mode}`}
+              >
+                View leaderboard
+              </a>
+              <button className="link-btn" onClick={() => setStage("ready")}>
+                Back to modes
+              </button>
+            </>
+          )}
+
+          {result && !result.ranked && (
+            <>
+              <p className="account-error">
+                {result.reason ?? "That run wasn't ranked."}
+              </p>
+              <button
+                className="check-btn"
+                onClick={() => result.mode && arm(result.mode)}
+              >
+                Try again
+              </button>
+              <button className="link-btn" onClick={() => setStage("ready")}>
+                Back to modes
+              </button>
+            </>
+          )}
         </section>
       )}
 
       {(stage === "armed" || stage === "countdown") && (
-        <section className="stage" aria-label="Ready to lift">
-          <div className="target">
-            <span>{MODE_LABELS[modeRef.current]}</span>
-          </div>
-          <Barbell plates={[]} collars={false} hidden />
-          <div className="cover">
-            {stage === "armed" ? (
-              <button className="start-btn" onClick={() => setStage("countdown")}>
-                Load the bar
-              </button>
-            ) : (
-              <div className="countdown" aria-live="assertive">
-                {count}
-              </div>
-            )}
-          </div>
-          <div className="prompt">
-            {stage === "armed"
-              ? "Press start when you're ready"
-              : "Get set…"}
-          </div>
-        </section>
+        <>
+          <section className="stage" aria-label="Ready to lift">
+            <div className="target">
+              <span>{MODE_LABELS[modeRef.current]}</span>
+            </div>
+            <Barbell plates={[]} collars={false} hidden />
+            <div className="cover">
+              {stage === "armed" ? (
+                <button className="start-btn" onClick={() => setStage("countdown")}>
+                  Load the bar
+                </button>
+              ) : (
+                <div className="countdown" aria-live="assertive">
+                  {count}
+                </div>
+              )}
+            </div>
+            <div className="prompt">
+              {stage === "armed" ? "Press start when you're ready" : "Get set…"}
+            </div>
+          </section>
+          {stage === "armed" && isLoadMode(modeRef.current) && (
+            <details className="legend" style={{ alignSelf: "center" }}>
+              <summary>Customize plate keys</summary>
+              <KeybindEditor
+                binds={binds}
+                smallest={RANKED_SETTINGS.smallest}
+                onChange={(next) => {
+                  setBinds(next);
+                  saveKeybinds(next);
+                }}
+              />
+            </details>
+          )}
+        </>
       )}
 
       {stage === "playing" && run && sidePlates && (
@@ -427,27 +479,26 @@ export default function RankedPage() {
           </section>
 
           <section className="console">
-            <div className="answer-row">
-              {load ? (
-                <div className="rack-wrap">
-                  <div className="rack" aria-label="Plate rack">
-                    {RACK.map((p) => (
-                      <div className="rack-slot" key={p.kg}>
-                        <button
-                          className="plate-btn"
-                          style={{ background: p.fill, borderColor: p.stroke, color: p.ink }}
-                          aria-label={`Add a ${fmt(p.kg)} kg plate`}
-                          onClick={() => addPlate(p.kg)}
-                        >
-                          {fmt(p.kg)}
-                        </button>
-                        <span className="key-hint">{binds[String(p.kg)] || "—"}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <button className="link-btn" onClick={undoPlate}>Undo</button>
+            {load ? (
+              <>
+                <div className="rack" aria-label="Plate rack">
+                  {RACK.map((p) => (
+                    <div className="rack-slot" key={p.kg}>
+                      <button
+                        className="plate-btn"
+                        style={{ background: p.fill, borderColor: p.stroke, color: p.ink }}
+                        aria-label={`Add a ${fmt(p.kg)} kg plate`}
+                        onClick={() => addPlate(p.kg)}
+                      >
+                        {fmt(p.kg)}
+                      </button>
+                      <span className="key-hint">{binds[String(p.kg)] || "—"}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="answer-row load-actions">
                   <button
-                    className="link-btn"
+                    className="btn-secondary"
                     onClick={() => {
                       platesRef.current = [];
                       setPlates([]);
@@ -455,8 +506,16 @@ export default function RankedPage() {
                   >
                     Clear
                   </button>
+                  <button className="btn-secondary" onClick={undoPlate}>
+                    Undo
+                  </button>
+                  <button className="check-btn" onClick={submitAnswer}>
+                    Submit
+                  </button>
                 </div>
-              ) : (
+              </>
+            ) : (
+              <div className="answer-row">
                 <div className="answer-field">
                   <input
                     ref={inputRef}
@@ -477,16 +536,15 @@ export default function RankedPage() {
                   />
                   <span className="unit">kg</span>
                 </div>
-              )}
-              <button
-                className="check-btn"
-                // keep the caret (and the phone keyboard) in the input
-                onMouseDown={(e) => !load && e.preventDefault()}
-                onClick={submitAnswer}
-              >
-                {load ? "Submit" : "Check"}
-              </button>
-            </div>
+                <button
+                  className="check-btn"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={submitAnswer}
+                >
+                  Check
+                </button>
+              </div>
+            )}
             <p className="breakdown">
               {endurance
                 ? `${hits} good · ${misses} missed`

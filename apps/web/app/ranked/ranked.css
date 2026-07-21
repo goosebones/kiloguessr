@@ -5,6 +5,40 @@
   flex-wrap: wrap;
 }
 
+.results {
+  align-items: stretch;
+  text-align: center;
+}
+.results-mode {
+  text-align: center;
+}
+.results .check-btn,
+.results .btn-secondary {
+  align-self: stretch;
+}
+.result-rank {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+  margin: 2px 0;
+}
+.result-rank b {
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1;
+}
+.result-rank span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
 .run-result {
   text-align: center;
   display: flex;
@@ -59,6 +93,11 @@
   text-align: center;
   text-decoration: none;
   display: block;
+}
+.play-this {
+  align-self: center;
+  max-width: 460px;
+  width: 100%;
 }
 
 .mode-grid {

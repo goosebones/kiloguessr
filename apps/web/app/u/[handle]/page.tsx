@@ -75,7 +75,7 @@ export default function PublicProfilePage() {
         <section className="card profile-card">
           <div className="profile-head">
             <h2 className="wordmark" style={{ fontSize: 30 }}>
-              @{profile.handle}
+              {profile.handle}
             </h2>
             {isOwner && (
               <a className="link-btn" href="/account">Edit profile</a>

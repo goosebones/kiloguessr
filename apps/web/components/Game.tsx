@@ -397,8 +397,58 @@ export default function Game() {
       </section>
 
       <section className="console">
-        <div className="answer-row">
-          {!isLoad && (
+        {isLoad ? (
+          <>
+            <div className="rack" aria-label="Plate rack">
+              {PLATES.map((p) =>
+                p.kg < settings.smallest ? null : (
+                  <div className="rack-slot" key={p.kg}>
+                    <button
+                      className="plate-btn"
+                      style={{ background: p.fill, borderColor: p.stroke, color: p.ink }}
+                      aria-label={`Add a ${fmt(p.kg)} kg plate`}
+                      onClick={() => addPlate(p.kg)}
+                    >
+                      {fmt(p.kg)}
+                    </button>
+                    <span className="key-hint">{binds[String(p.kg)] || "—"}</span>
+                  </div>
+                ),
+              )}
+            </div>
+            <div className="answer-row load-actions">
+              <button
+                className="btn-secondary"
+                disabled={phase !== "ask"}
+                onClick={() => phase === "ask" && setPlayerPlates([])}
+              >
+                Clear
+              </button>
+              <button
+                className="btn-secondary"
+                disabled={phase !== "ask"}
+                onClick={removePlate}
+              >
+                Undo
+              </button>
+              <button
+                className="check-btn"
+                disabled={phase !== "ask"}
+                onClick={() => judge(false)}
+              >
+                Submit
+              </button>
+            </div>
+            <button
+              className="link-btn"
+              disabled={phase !== "ask"}
+              onClick={() => judge(true)}
+            >
+              Show answer
+            </button>
+          </>
+        ) : (
+          <div className="answer-row">
             <div className="answer-field">
               <input
                 ref={answerRef}
@@ -422,56 +472,24 @@ export default function Game() {
               />
               <span className="unit">kg</span>
             </div>
-          )}
-          {isLoad && (
-            <div className="rack-wrap">
-              <div className="rack" aria-label="Plate rack">
-                {PLATES.map((p) =>
-                  p.kg < settings.smallest ? null : (
-                    <div className="rack-slot" key={p.kg}>
-                      <button
-                        className="plate-btn"
-                        style={{ background: p.fill, borderColor: p.stroke, color: p.ink }}
-                        aria-label={`Add a ${fmt(p.kg)} kg plate`}
-                        onClick={() => addPlate(p.kg)}
-                      >
-                        {fmt(p.kg)}
-                      </button>
-                      <span className="key-hint">{binds[String(p.kg)] || "—"}</span>
-                    </div>
-                  ),
-                )}
-              </div>
-              <button className="link-btn" onClick={removePlate} disabled={phase !== "ask"}>
-                Undo
-              </button>
-              <button
-                className="link-btn"
-                onClick={() => phase === "ask" && setPlayerPlates([])}
-                disabled={phase !== "ask"}
-              >
-                Clear
-              </button>
-            </div>
-          )}
-          <button
-            className="check-btn"
-            disabled={phase !== "ask"}
-            // keep the caret (and the phone keyboard) in the input
-            onMouseDown={(e) => !isLoad && e.preventDefault()}
-            onClick={() => judge(false)}
-          >
-            {isLoad ? "Submit" : "Check"}
-          </button>
-          <button
-            className="link-btn"
-            disabled={phase !== "ask"}
-            onMouseDown={(e) => !isLoad && e.preventDefault()}
-            onClick={() => judge(true)}
-          >
-            Show answer
-          </button>
-        </div>
+            <button
+              className="check-btn"
+              disabled={phase !== "ask"}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => judge(false)}
+            >
+              Check
+            </button>
+            <button
+              className="link-btn"
+              disabled={phase !== "ask"}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => judge(true)}
+            >
+              Show answer
+            </button>
+          </div>
+        )}
         <div className="judging" aria-live="polite">
           <div className={`verdict ${verdict ? verdict.kind + " pop" : ""}`}>
             {verdict?.html}

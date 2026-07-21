@@ -375,6 +375,42 @@
   padding: 12px 26px;
   cursor: pointer;
 }
+/* secondary action (Clear / Undo) — same shape as the primary, quiet fill */
+.btn-secondary {
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 20px;
+  cursor: pointer;
+}
+.btn-secondary:hover {
+  border-color: var(--accent);
+}
+.btn-secondary:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+/* Clear · Undo · Submit share one row, like the read-mode input+button */
+.load-actions {
+  flex-wrap: nowrap;
+  width: 100%;
+  max-width: 460px;
+  gap: 8px;
+}
+.load-actions .btn-secondary,
+.load-actions .check-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-left: 8px;
+  padding-right: 8px;
+}
 .link-btn {
   background: none;
   border: none;
