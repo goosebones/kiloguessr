@@ -74,7 +74,7 @@ export default function PublicProfilePage() {
       {profile && (
         <section className="card profile-card">
           <div className="profile-head">
-            <h2 className="wordmark" style={{ fontSize: 30 }}>
+            <h2 className="wordmark" style={{ fontSize: 30, textTransform: "lowercase" }}>
               {profile.handle}
             </h2>
             {isOwner && (
