@@ -9,8 +9,8 @@ import type { APIGatewayProxyEventV2WithJWTAuthorizer } from "aws-lambda";
 import { TABLE, ddb, json, subOf } from "./lib/db";
 import { bestsOf } from "./users";
 
-const HANDLE_RE = /^[a-z0-9_]{3,20}$/;
-const IG_RE = /^[A-Za-z0-9._]{1,30}$/;
+const HANDLE_RE = /^[a-z0-9_.]{3,20}$/;
+const IG_RE = /^[a-z0-9._]{1,30}$/;
 const DENYLIST = new Set([
   "admin", "administrator", "mod", "moderator", "root", "support",
   "staff", "official", "kiloguessr", "liftinglookup",
@@ -93,7 +93,8 @@ export const patch = async (event: APIGatewayProxyEventV2WithJWTAuthorizer) => {
     const handle = String(body.handle).trim().toLowerCase();
     if (!HANDLE_RE.test(handle)) {
       return json(400, {
-        error: "Handles are 3–20 characters: letters, numbers, underscore.",
+        error:
+          "Handles are 3–20 characters: lowercase letters, numbers, underscore, or period.",
       });
     }
     if (DENYLIST.has(handle)) return json(400, { error: "That handle isn't available." });
@@ -142,7 +143,8 @@ export const patch = async (event: APIGatewayProxyEventV2WithJWTAuthorizer) => {
   }
 
   if (body.instagram !== undefined) {
-    const raw = String(body.instagram ?? "").trim().replace(/^@/, "");
+    // Instagram usernames are lowercase; same character set as our handles.
+    const raw = String(body.instagram ?? "").trim().replace(/^@/, "").toLowerCase();
     if (raw === "") {
       await ddb.send(
         new UpdateCommand({

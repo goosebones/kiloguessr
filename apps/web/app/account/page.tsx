@@ -382,15 +382,25 @@ export default function AccountPage() {
             <input
               value={handle}
               placeholder="e.g. plate_math_goblin"
-              onChange={(e) => setHandle(e.target.value.toLowerCase())}
+              autoCapitalize="off"
+              autoCorrect="off"
+              onChange={(e) =>
+                setHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_.]/g, ""))
+              }
             />
           </label>
           <label>
             Instagram (optional)
             <input
               value={instagram}
-              placeholder="@yourlifting"
-              onChange={(e) => setInstagram(e.target.value)}
+              placeholder="yourlifting"
+              autoCapitalize="off"
+              autoCorrect="off"
+              onChange={(e) =>
+                setInstagram(
+                  e.target.value.toLowerCase().replace(/[^a-z0-9_.]/g, ""),
+                )
+              }
             />
           </label>
           {profile.bests && RANKED_MODES.some((m) => profile.bests?.[m]) && (
