@@ -3,8 +3,14 @@ import {
   GetCommand,
   QueryCommand,
 } from "@aws-sdk/lib-dynamodb";
+import {
+  AdminDeleteUserCommand,
+  CognitoIdentityProviderClient,
+} from "@aws-sdk/client-cognito-identity-provider";
 import type { APIGatewayProxyEventV2WithJWTAuthorizer } from "aws-lambda";
 import { TABLE, ddb, json, subOf } from "./lib/db";
+
+const cognito = new CognitoIdentityProviderClient({});
 
 type Key = { pk: string; sk: string };
 
@@ -23,8 +29,10 @@ async function deleteAll(keys: Key[]) {
 
 /**
  * Erase everything we hold for this lifter: profile, handle claim, bests,
- * run history, and every leaderboard row. The Cognito account itself is
- * deleted by the browser afterwards via its own access token.
+ * run history, every leaderboard row, and — last — the Cognito account
+ * itself (the only place their email lives). Deleting Cognito server-side
+ * makes email removal guaranteed rather than reliant on the browser.
+ * For this pool the Cognito Username equals the `sub`.
  */
 export const remove = async (event: APIGatewayProxyEventV2WithJWTAuthorizer) => {
   const sub = subOf(event);
@@ -65,5 +73,15 @@ export const remove = async (event: APIGatewayProxyEventV2WithJWTAuthorizer) => 
   }
 
   await deleteAll(keys);
+
+  // Remove the login and its email from Cognito. If this throws, the handler
+  // 500s and the client can retry — the DynamoDB deletes above are idempotent.
+  await cognito.send(
+    new AdminDeleteUserCommand({
+      UserPoolId: process.env.USER_POOL_ID,
+      Username: sub,
+    }),
+  );
+
   return json(200, { deleted: true });
 };

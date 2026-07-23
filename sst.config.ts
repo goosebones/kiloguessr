@@ -25,13 +25,19 @@ export default $config({
       globalIndexes: {
         gsi1: { hashKey: "gsi1pk", rangeKey: "gsi1sk" },
       },
+      transform: {
+        // guard against an accidental table delete (PITR is already on)
+        table: (args) => {
+          args.deletionProtectionEnabled = isProd;
+        },
+      },
     });
 
     const userPool = new sst.aws.CognitoUserPool("UserPool", {
       usernames: ["email"],
       transform: {
-        // Length over composition rules: a long passphrase beats "Password1!".
         userPool: {
+          // Length over composition rules: a long passphrase beats "Password1!".
           passwordPolicy: {
             minimumLength: 10,
             requireLowercase: false,
@@ -40,10 +46,23 @@ export default $config({
             requireSymbols: false,
             temporaryPasswordValidityDays: 7,
           },
+          deletionProtection: isProd ? "ACTIVE" : "INACTIVE",
         },
       },
     });
-    const userPoolClient = userPool.addClient("WebClient");
+    const userPoolClient = userPool.addClient("WebClient", {
+      transform: {
+        client: (args) => {
+          // don't reveal whether an email is registered (blocks enumeration)
+          args.preventUserExistenceErrors = "ENABLED";
+          // app uses SRP auth, not the hosted UI — turn OAuth off entirely
+          args.allowedOauthFlowsUserPoolClient = false;
+          args.allowedOauthFlows = [];
+          args.allowedOauthScopes = [];
+          args.callbackUrls = [];
+        },
+      },
+    });
 
     const api = new sst.aws.ApiGatewayV2("Api", {
       domain: isProd ? { name: "api.kiloguessr.liftinglookup.com" } : undefined,
@@ -53,6 +72,16 @@ export default $config({
           : ["*"],
         allowHeaders: ["authorization", "content-type"],
         allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+      },
+      transform: {
+        // cap request rate per route so nobody can hammer the public
+        // endpoints and run up DynamoDB/Lambda cost (429 over the limit)
+        stage: (args) => {
+          args.defaultRouteSettings = {
+            throttlingBurstLimit: 40,
+            throttlingRateLimit: 20,
+          };
+        },
       },
     });
 
@@ -77,7 +106,14 @@ export default $config({
     );
     api.route(
       "DELETE /v1/me",
-      { handler: "packages/functions/src/account.remove", link: [table] },
+      {
+        handler: "packages/functions/src/account.remove",
+        link: [table],
+        environment: { USER_POOL_ID: userPool.id },
+        permissions: [
+          { actions: ["cognito-idp:AdminDeleteUser"], resources: [userPool.arn] },
+        ],
+      },
       authed,
     );
     api.route("GET /v1/users/{handle}", {

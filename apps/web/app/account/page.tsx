@@ -158,14 +158,15 @@ export default function AccountPage() {
 
   const doDelete = () =>
     run(async () => {
+      // the server erases our data AND the Cognito login (email) together
       const res = await authedFetch("/v1/me", { method: "DELETE" });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error ?? "Couldn't delete your account.");
       }
-      // our data is gone; now remove the login itself
-      const { deleteUser } = await import("aws-amplify/auth");
-      await deleteUser();
+      // clear the now-invalid tokens from this browser
+      const { signOut } = await import("aws-amplify/auth");
+      await signOut().catch(() => {});
       setProfile(null);
       setConfirmingDelete(false);
       setMode("signin");
