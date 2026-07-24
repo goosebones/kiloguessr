@@ -1,0 +1,53 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Serialize deploys so two pushes can't fight over the SST lock.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  id-token: write # mint the OIDC token used to assume the AWS role
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Test engine
+        run: pnpm --filter @kiloguessr/engine test
+
+      - name: Typecheck
+        run: |
+          pnpm --filter @kiloguessr/web exec tsc --noEmit
+          pnpm --filter @kiloguessr/functions exec tsc --noEmit
+
+      - name: Assume AWS role via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Deploy
+        run: |
+          rm -rf apps/web/.next apps/web/.open-next
+          pnpm exec sst deploy --stage production
+        env:
+          SST_TELEMETRY_DISABLED: "1"
