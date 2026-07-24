@@ -87,7 +87,8 @@ describe("scoreRun — endurance", () => {
   });
 
   it("rejects more answers than cards", () => {
-    const answers = Array.from({ length: 130 }, (_, i) => right(i % 100));
+    const tooMany = cardsPerRun("endurance-read") + 10;
+    const answers = Array.from({ length: tooMany }, (_, i) => right(i % 100));
     expect(scoreRun("endurance-read", SEED, answers).valid).toBe(false);
   });
 });

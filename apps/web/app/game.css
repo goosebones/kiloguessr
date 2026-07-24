@@ -467,6 +467,14 @@ summary:focus-visible {
 .plate-btn:active {
   transform: scale(0.92);
 }
+/* plate can't legally go on next (heavier than what's already loaded) */
+.plate-btn:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+.plate-btn:disabled:active {
+  transform: none;
+}
 .key-hint {
   font-family: var(--mono);
   font-size: 10px;

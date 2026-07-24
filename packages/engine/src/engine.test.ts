@@ -5,6 +5,8 @@ import {
   decomposeSide,
   describeSide,
   fmt,
+  loadMatches,
+  platesDescending,
   generateCard,
   loadedTotalQ,
   mulberry32,
@@ -116,6 +118,38 @@ describe("answersMatch (2/7 shorthand)", () => {
     expect(answersMatch(187.2, 187.7)).toBe(false);
     expect(answersMatch(187, 187)).toBe(true);
     expect(answersMatch(187, 188)).toBe(false);
+  });
+});
+
+describe("loadMatches", () => {
+  it("accepts only the exact loading, in order", () => {
+    expect(loadMatches([25, 25, 10, 2.5], [25, 25, 10, 2.5])).toBe(true);
+    expect(loadMatches([], [])).toBe(true);
+  });
+
+  it("rejects the right weight built from the wrong plates", () => {
+    // 25 + 25 = 50, same weight as twenty 2.5s — not the same bar
+    const twenties = Array.from({ length: 20 }, () => 2.5);
+    expect(loadMatches(twenties, [25, 25])).toBe(false);
+    expect(loadMatches([20, 15, 15], [25, 25])).toBe(false);
+  });
+
+  it("rejects the right plates in the wrong order", () => {
+    expect(loadMatches([25, 1.25, 25], [25, 25, 1.25])).toBe(false);
+    expect(loadMatches([10, 25], [25, 10])).toBe(false);
+  });
+
+  it("rejects partial or padded loads", () => {
+    expect(loadMatches([25], [25, 25])).toBe(false);
+    expect(loadMatches([25, 25, 25], [25, 25])).toBe(false);
+  });
+});
+
+describe("platesDescending", () => {
+  it("allows equal neighbours, rejects a heavier plate outside a lighter one", () => {
+    expect(platesDescending([25, 25, 10, 1.25])).toBe(true);
+    expect(platesDescending([25, 10, 25])).toBe(false);
+    expect(platesDescending([])).toBe(true);
   });
 });
 

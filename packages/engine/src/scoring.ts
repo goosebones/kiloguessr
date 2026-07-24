@@ -1,6 +1,7 @@
 import { generateCard, totalKg, type Card } from "./cards";
-import { answersMatch, loadedTotalQ, parseAnswer } from "./grading";
+import { answersMatch, loadMatches, parseAnswer } from "./grading";
 import {
+  ENDURANCE_MAX_CARDS,
   RANKED_ENDURANCE,
   RANKED_SETTINGS,
   SPRINT_MAX_CARDS,
@@ -35,7 +36,7 @@ export const isEndurance = (m: RankedMode) => m.startsWith("endurance-");
 
 /** Both formats get a surplus batch — runs end on the clock, not the cards. */
 export const cardsPerRun = (m: RankedMode) =>
-  isEndurance(m) ? 120 : SPRINT_MAX_CARDS;
+  isEndurance(m) ? ENDURANCE_MAX_CARDS : SPRINT_MAX_CARDS;
 
 /** Deterministic card batch for a run — identical on client and server. */
 export function generateRunCards(mode: RankedMode, seed: number): Card[] {
@@ -65,7 +66,7 @@ export function gradeAnswer(
 ): boolean {
   if (isLoadMode(mode)) {
     if (!Array.isArray(a.plates)) return false;
-    return loadedTotalQ(RANKED_SETTINGS, a.plates) === card.totalQ;
+    return loadMatches(a.plates, card.sidePlates);
   }
   const n = parseAnswer(String(a.answer ?? ""));
   return n !== null && answersMatch(n, totalKg(card));

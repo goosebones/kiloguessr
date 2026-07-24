@@ -31,3 +31,9 @@ export const RANKED_SETTINGS: GameSettings = {
 export const SPRINT_TARGET = 10;
 /** Card surplus issued for a sprint, since misses need replacements. */
 export const SPRINT_MAX_CARDS = 60;
+/**
+ * Cards issued for an endurance run. A strong player nets time on every lift
+ * (+2s for a sub-2s answer), so the batch — not the clock — is the real
+ * ceiling; keep it far above any human's reach.
+ */
+export const ENDURANCE_MAX_CARDS = 500;

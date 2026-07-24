@@ -11,7 +11,7 @@ import {
   describeSide,
   fmt,
   generateCard,
-  loadedTotalQ,
+  loadMatches,
   mulberry32,
   parseAnswer,
   totalKg,
@@ -196,7 +196,7 @@ export default function Game() {
       if (!gaveUp) {
         if (s.game === 1) {
           if (playerPlates.length === 0 && Date.now() - judgedAt.current < 500) return;
-          correct = loadedTotalQ(s, playerPlates) === card.totalQ;
+          correct = loadMatches(playerPlates, card.sidePlates);
         } else {
           const ans = parseAnswer(answer);
           if (ans === null) {
@@ -262,11 +262,12 @@ export default function Game() {
   const addPlate = useCallback(
     (kg: number) => {
       if (phase !== "ask" || settingsRef.current.game !== 1) return;
-      setPlayerPlates((p) =>
-        p.length >= MAX_LOADED_PLATES || kg < settingsRef.current.smallest
-          ? p
-          : [...p, kg],
-      );
+      setPlayerPlates((p) => {
+        if (p.length >= MAX_LOADED_PLATES || kg < settingsRef.current.smallest) return p;
+        // a bar loads biggest-first; can't put a heavier plate outside a lighter one
+        if (p.length > 0 && kg > p[p.length - 1]) return p;
+        return [...p, kg];
+      });
     },
     [phase],
   );
@@ -407,6 +408,10 @@ export default function Game() {
                       className="plate-btn"
                       style={{ background: p.fill, borderColor: p.stroke, color: p.ink }}
                       aria-label={`Add a ${fmt(p.kg)} kg plate`}
+                      disabled={
+                        playerPlates.length > 0 &&
+                        p.kg > playerPlates[playerPlates.length - 1]
+                      }
                       onClick={() => addPlate(p.kg)}
                     >
                       {fmt(p.kg)}

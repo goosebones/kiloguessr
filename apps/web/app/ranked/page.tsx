@@ -15,6 +15,7 @@ import {
   isEndurance,
   isLoadMode,
   isRankedMode,
+  loadMatches,
   loadedTotalQ,
   parseAnswer,
   type RankedMode,
@@ -232,8 +233,7 @@ export default function RankedPage() {
     if (isLoadMode(m)) {
       if (platesRef.current.length === 0) return; // don't burn a card on a stray Enter
       entry.plates = [...platesRef.current];
-      ok = loadedTotalQ(RANKED_SETTINGS, platesRef.current) ===
-        loadedTotalQ(RANKED_SETTINGS, card.sidePlates);
+      ok = loadMatches(platesRef.current, card.sidePlates);
     } else {
       const parsed = parseAnswer(answer);
       if (parsed === null) return;
@@ -278,8 +278,11 @@ export default function RankedPage() {
   }, [answer, finish, run, stage]);
 
   const addPlate = useCallback((kg: number) => {
-    if (platesRef.current.length >= 14) return;
-    platesRef.current = [...platesRef.current, kg];
+    const cur = platesRef.current;
+    if (cur.length >= 14) return;
+    // a bar loads biggest-first; can't put a heavier plate outside a lighter one
+    if (cur.length > 0 && kg > cur[cur.length - 1]) return;
+    platesRef.current = [...cur, kg];
     setPlates(platesRef.current);
   }, []);
 
@@ -554,6 +557,7 @@ export default function RankedPage() {
                   className="plate-btn"
                   style={{ background: p.fill, borderColor: p.stroke, color: p.ink }}
                   aria-label={`Add a ${fmt(p.kg)} kg plate`}
+                  disabled={plates.length > 0 && p.kg > plates[plates.length - 1]}
                   onClick={() => addPlate(p.kg)}
                 >
                   {fmt(p.kg)}

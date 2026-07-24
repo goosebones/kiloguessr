@@ -30,3 +30,28 @@ export function answersMatch(ans: number, total: number): boolean {
 export function loadedTotalQ(s: GameSettings, sidePlates: number[]): number {
   return sidePlates.reduce((q, kg) => q + 2 * kg * Q, baseQ(s));
 }
+
+/**
+ * Plates must go on biggest-first, the way a bar is actually loaded:
+ * reds, blues, yellows, greens, whites, blacks, then change. Equal plates
+ * side by side are fine; a heavier plate outside a lighter one is not.
+ */
+export function platesDescending(plates: number[]): boolean {
+  for (let i = 1; i < plates.length; i++) {
+    if (plates[i] > plates[i - 1]) return false;
+  }
+  return true;
+}
+
+/**
+ * Load-mode grading: the side must be the *actual* loading — the same plates,
+ * biggest-first, that a loader would put on. Matching the total isn't enough:
+ * twenty 2.5s weigh the same as a red and a blue, but it isn't the same bar.
+ */
+export function loadMatches(
+  playerPlates: number[],
+  targetPlates: number[],
+): boolean {
+  if (playerPlates.length !== targetPlates.length) return false;
+  return playerPlates.every((kg, i) => kg === targetPlates[i]);
+}
