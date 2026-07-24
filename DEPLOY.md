@@ -60,10 +60,8 @@ cat > /tmp/kiloguessr-ci-trust.json <<'JSON'
     "Principal": { "Federated": "arn:aws:iam::248898759724:oidc-provider/token.actions.githubusercontent.com" },
     "Action": "sts:AssumeRoleWithWebIdentity",
     "Condition": {
-      "StringEquals": {
-        "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-        "token.actions.githubusercontent.com:sub": "repo:goosebones/kiloguessr:ref:refs/heads/main"
-      }
+      "StringEquals": { "token.actions.githubusercontent.com:aud": "sts.amazonaws.com" },
+      "StringLike": { "token.actions.githubusercontent.com:sub": "repo:goosebones/kiloguessr:*" }
     }
   }]
 }
@@ -85,12 +83,16 @@ aws --profile kiloguessr-deploy iam attach-role-policy \
 
 Role ARN: `arn:aws:iam::248898759724:role/kiloguessr-ci-deploy`
 
-Verify the policy took (no blank `iam:::` or `repo::ref`):
+Verify the policy took (no blank `iam:::` or `repo::`):
 
 ```sh
 aws --profile kiloguessr-deploy iam get-role \
   --role-name kiloguessr-ci-deploy --query "Role.AssumeRolePolicyDocument"
 ```
+
+> A newly-created OIDC provider and trust policy can take several minutes to
+> propagate to STS. If the first `AssumeRoleWithWebIdentity` fails with
+> "Not authorized" despite a correct policy, wait ~5 minutes and re-run.
 
 ### 4. Tell the workflow which role to assume
 
