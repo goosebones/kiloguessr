@@ -39,6 +39,23 @@ jobs:
           pnpm --filter @kiloguessr/web exec tsc --noEmit
           pnpm --filter @kiloguessr/functions exec tsc --noEmit
 
+      # TEMP: print the real OIDC token claims to see exactly what STS is handed.
+      # Prints only decoded claims (not secret), not the raw token. Remove once
+      # the assume-role works.
+      - name: Debug OIDC claims
+        run: |
+          echo "role variable = '${{ vars.AWS_DEPLOY_ROLE_ARN }}'"
+          if [ -z "$ACTIONS_ID_TOKEN_REQUEST_URL" ]; then
+            echo "::error::ACTIONS_ID_TOKEN_REQUEST_URL empty — id-token: write is NOT effective (check repo Settings > Actions > General > Workflow permissions)."
+            exit 1
+          fi
+          IDTOKEN=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" | jq -r .value)
+          echo "token length: ${#IDTOKEN}"
+          PAY=$(echo "$IDTOKEN" | cut -d. -f2 | tr '_-' '/+')
+          case $(( ${#PAY} % 4 )) in 2) PAY="$PAY==";; 3) PAY="$PAY=";; esac
+          echo "$PAY" | base64 -d 2>/dev/null | jq '{iss, aud, sub, repository, repository_owner, ref}'
+
       - name: Assume AWS role via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
