@@ -97,19 +97,32 @@ The push in step 1 already kicked off a run that **failed** at "Assume AWS role"
 (the role/variable didn't exist yet — expected). Now that steps 2–4 are done,
 re-run it: **Actions → Deploy → Run workflow**, or push any commit to `main`.
 
-### 6. Retire the local key (after CI is proven)
+### 6. Retire the local keys
 
-Once a CI deploy succeeds, delete the long-lived access key so nothing standing
-remains:
+List the keys — the `AccessKeyId` values in the output are what go in the
+`--access-key-id` slot below:
 
 ```sh
 aws --profile kiloguessr-deploy iam list-access-keys --user-name kiloguessr-deploy
-aws --profile kiloguessr-deploy iam delete-access-key \
-  --user-name kiloguessr-deploy --access-key-id <THE_KEY_ID>
 ```
 
-You can keep the `kiloguessr-deploy` user (now keyless) for occasional local
-use via `aws login`, or delete it entirely.
+There are two, deleted at different times:
+
+- **The old compromised key** (its secret was echoed to a terminal) — delete it
+  **now**, it's unused:
+  ```sh
+  aws --profile kiloguessr-deploy iam delete-access-key \
+    --user-name kiloguessr-deploy --access-key-id AKIATT44FVQWPJIAMCFQ
+  ```
+- **The current key** the local profile uses — delete it **after** a CI deploy
+  succeeds, so nothing standing remains:
+  ```sh
+  aws --profile kiloguessr-deploy iam delete-access-key \
+    --user-name kiloguessr-deploy --access-key-id AKIATT44FVQWE4PB4WHC
+  ```
+
+You can keep the `kiloguessr-deploy` user (now keyless) for occasional local use
+via `aws login`, or delete it entirely.
 
 ---
 
