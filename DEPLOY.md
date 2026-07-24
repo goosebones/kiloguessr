@@ -14,12 +14,10 @@ continues the same stack local deploys created — nothing is recreated.
 Run these from the repo root. AWS commands use your `kiloguessr-deploy` profile;
 you (not Claude) run them — IAM changes need your hands.
 
-### 0. Pick your repo
-
-```sh
-REPO="YOUR_GH_USER/kiloguessr"     # <-- set this
-ACCOUNT=248898759724
-```
+Account id: **248898759724**. Your repo: **goosebones/kiloguessr**. Both are
+hardcoded below — don't use shell variables in the trust policy (unset vars
+silently produce a broken policy, which fails with
+`Not authorized to perform sts:AssumeRoleWithWebIdentity`).
 
 ### 1. Create the GitHub repo and push
 
@@ -50,27 +48,33 @@ required by the API but no longer load-bearing.)
 
 ### 3. Create the deploy role, trusted only by this repo's `main`
 
+Write the trust policy with **literal values** (single-quoted heredoc, no
+expansion):
+
 ```sh
-cat > /tmp/kiloguessr-ci-trust.json <<JSON
+cat > /tmp/kiloguessr-ci-trust.json <<'JSON'
 {
   "Version": "2012-10-17",
   "Statement": [{
     "Effect": "Allow",
-    "Principal": { "Federated": "arn:aws:iam::${ACCOUNT}:oidc-provider/token.actions.githubusercontent.com" },
+    "Principal": { "Federated": "arn:aws:iam::248898759724:oidc-provider/token.actions.githubusercontent.com" },
     "Action": "sts:AssumeRoleWithWebIdentity",
     "Condition": {
       "StringEquals": {
         "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-        "token.actions.githubusercontent.com:sub": "repo:${REPO}:ref:refs/heads/main"
+        "token.actions.githubusercontent.com:sub": "repo:goosebones/kiloguessr:ref:refs/heads/main"
       }
     }
   }]
 }
 JSON
 
+# create the role (or, if it already exists, use update-assume-role-policy):
 aws --profile kiloguessr-deploy iam create-role \
   --role-name kiloguessr-ci-deploy \
   --assume-role-policy-document file:///tmp/kiloguessr-ci-trust.json
+# aws --profile kiloguessr-deploy iam update-assume-role-policy \
+#   --role-name kiloguessr-ci-deploy --policy-document file:///tmp/kiloguessr-ci-trust.json
 
 # SST needs broad permissions; scope later if desired. The win here is that
 # there is no standing key — only this repo's main branch can assume it.
@@ -80,6 +84,13 @@ aws --profile kiloguessr-deploy iam attach-role-policy \
 ```
 
 Role ARN: `arn:aws:iam::248898759724:role/kiloguessr-ci-deploy`
+
+Verify the policy took (no blank `iam:::` or `repo::ref`):
+
+```sh
+aws --profile kiloguessr-deploy iam get-role \
+  --role-name kiloguessr-ci-deploy --query "Role.AssumeRolePolicyDocument"
+```
 
 ### 4. Tell the workflow which role to assume
 
