@@ -152,6 +152,28 @@ export const submit = async (event: APIGatewayProxyEventV2WithJWTAuthorizer) => 
     });
   }
 
+  // Keep the per-card timings on the run record so a suspect score can be
+  // examined after the fact; without them there's nothing to investigate.
+  await ddb
+    .send(
+      new UpdateCommand({
+        TableName: TABLE,
+        Key: { pk: `USER#${sub}`, sk: `RUN#${runId}` },
+        UpdateExpression:
+          "SET score = :sc, cardMs = :ms, wallClockMs = :wc, correct = :c, attempts = :a" +
+          (result.suspicious ? ", suspicious = :susp" : ""),
+        ExpressionAttributeValues: {
+          ":sc": result.score,
+          ":ms": answers.slice(0, 200).map((a) => Math.round(Number(a.ms) || 0)),
+          ":wc": elapsed,
+          ":c": result.correct,
+          ":a": result.attempts,
+          ...(result.suspicious ? { ":susp": result.suspicious } : {}),
+        },
+      }),
+    )
+    .catch(() => {}); // never fail a legitimate submission over bookkeeping
+
   const profile = await profileOf(sub);
   const handle = profile?.handle as string | undefined;
   if (!handle) {

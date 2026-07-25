@@ -278,11 +278,8 @@ export default function RankedPage() {
   }, [answer, finish, run, stage]);
 
   const addPlate = useCallback((kg: number) => {
-    const cur = platesRef.current;
-    if (cur.length >= 14) return;
-    // a bar loads biggest-first; can't put a heavier plate outside a lighter one
-    if (cur.length > 0 && kg > cur[cur.length - 1]) return;
-    platesRef.current = [...cur, kg];
+    if (platesRef.current.length >= 14) return;
+    platesRef.current = [...platesRef.current, kg];
     setPlates(platesRef.current);
   }, []);
 
@@ -557,7 +554,6 @@ export default function RankedPage() {
                   className="plate-btn"
                   style={{ background: p.fill, borderColor: p.stroke, color: p.ink }}
                   aria-label={`Add a ${fmt(p.kg)} kg plate`}
-                  disabled={plates.length > 0 && p.kg > plates[plates.length - 1]}
                   onClick={() => addPlate(p.kg)}
                 >
                   {fmt(p.kg)}

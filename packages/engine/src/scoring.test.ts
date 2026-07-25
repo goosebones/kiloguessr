@@ -137,6 +137,47 @@ describe("scoreRun — sprint", () => {
   });
 });
 
+describe("anti-cheat floors", () => {
+  const sprintCards = generateRunCards("sprint-read", SEED);
+  const sRight = (i: number, ms: number): SubmittedAnswer => ({
+    answer: fmt(totalKg(sprintCards[i])),
+    ms,
+  });
+
+  it("rejects a sprint at the per-card floor (the 3.5-4s exploit)", () => {
+    // 10 correct at 420ms each = 4.2s — passes MIN_CARD_MS but not a human
+    const answers = Array.from({ length: 10 }, (_, i) => sRight(i, 420));
+    const r = scoreRun("sprint-read", SEED, answers);
+    expect(r.valid).toBe(false);
+    expect(r.reason).toMatch(/humanly possible/i);
+  });
+
+  it("accepts a genuinely fast human sprint", () => {
+    // 10 correct averaging ~1.9s = 19s, matching real leaderboard times
+    const jitter = [1700, 2100, 1850, 2300, 1600, 2000, 1950, 2200, 1750, 1900];
+    const answers = jitter.map((ms, i) => sRight(i, ms));
+    const r = scoreRun("sprint-read", SEED, answers);
+    expect(r.valid).toBe(true);
+    expect(r.suspicious).toBeUndefined();
+  });
+
+  it("rejects endurance paced faster than a human can read bars", () => {
+    const answers = Array.from({ length: 40 }, (_, i) => right(i, 400));
+    const r = scoreRun("endurance-read", SEED, answers);
+    expect(r.valid).toBe(false);
+    expect(r.reason).toMatch(/humanly possible/i);
+  });
+
+  it("flags (but still scores) a machine-regular run", () => {
+    // every card within a few ms — plausible pace, implausible consistency
+    const times = [1500, 1502, 1498, 1501, 1499, 1500, 1503, 1497, 1500, 1501];
+    const answers = times.map((ms, i) => sRight(i, ms));
+    const r = scoreRun("sprint-read", SEED, answers);
+    expect(r.valid).toBe(true);
+    expect(r.suspicious).toMatch(/machine-like/i);
+  });
+});
+
 describe("ranking", () => {
   it("treats higher as better for endurance, lower for sprint", () => {
     expect(isBetter("endurance-read", 20, 15)).toBe(true);

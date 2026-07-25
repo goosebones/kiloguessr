@@ -79,6 +79,53 @@ export function gradeAnswer(
  */
 export const MIN_CARD_MS = 350;
 
+/**
+ * Floor on a completed sprint. Real fast humans post 19–42s, so this is less
+ * than half the best legitimate time — it exists purely to reject a script
+ * echoing the answers back at the per-card minimum (10 × 350ms = 3.5s).
+ */
+export const SPRINT_MIN_TOTAL_MS = 8000;
+
+/**
+ * Floor on the average time per good lift in an endurance run. A script
+ * pacing at MIN_CARD_MS would post ~0.35s/lift; a human reading a bar and
+ * typing is far slower even at speed.
+ */
+export const ENDURANCE_MIN_MS_PER_LIFT = 700;
+
+/**
+ * A scripted run answers with near-identical timing; a human's times swing
+ * with how awkward each bar is. Runs below this spread are implausibly
+ * machine-like. Only applied once there are enough cards to be meaningful.
+ */
+export const MIN_TIMING_STDDEV_MS = 60;
+export const TIMING_CHECK_MIN_CARDS = 8;
+
+/** Population standard deviation of the per-card times, in ms. */
+export function timingStdDev(times: number[]): number {
+  if (times.length < 2) return Infinity;
+  const mean = times.reduce((a, b) => a + b, 0) / times.length;
+  const variance =
+    times.reduce((a, t) => a + (t - mean) ** 2, 0) / times.length;
+  return Math.sqrt(variance);
+}
+
+/**
+ * Flags a run whose per-card timings are too regular to be hand-played.
+ * Advisory only — it marks a run for review rather than rejecting it, since
+ * a determined script can add human-looking jitter and we'd rather never
+ * throw out a real player's score.
+ */
+export function machinePaced(answers: SubmittedAnswer[]): string | undefined {
+  if (answers.length < TIMING_CHECK_MIN_CARDS) return undefined;
+  const times = answers.map((a) => a.ms);
+  const sd = timingStdDev(times);
+  if (sd < MIN_TIMING_STDDEV_MS) {
+    return `per-card timing spread ${Math.round(sd)}ms is machine-like`;
+  }
+  return undefined;
+}
+
 export interface RunScore {
   valid: boolean;
   reason?: string;
@@ -89,6 +136,8 @@ export interface RunScore {
   accuracy: number;
   verdicts: boolean[];
   playedMs: number;
+  /** set when the run scored but looks machine-paced — for review, not rejection */
+  suspicious?: string;
 }
 
 const invalid = (reason: string): RunScore => ({
@@ -143,6 +192,11 @@ export function scoreRun(
       if (remaining <= 0) break;
     }
     const attempts = verdicts.length;
+    // a script paced at the per-card floor posts far more lifts per second
+    // than a human reading bars can
+    if (correct > 0 && playedMs / correct < ENDURANCE_MIN_MS_PER_LIFT) {
+      return invalid("That run was faster than humanly possible.");
+    }
     return {
       valid: true,
       score: correct,
@@ -151,6 +205,7 @@ export function scoreRun(
       accuracy: attempts ? correct / attempts : 0,
       verdicts,
       playedMs,
+      suspicious: machinePaced(answers.slice(0, attempts)),
     };
   }
 
@@ -166,9 +221,13 @@ export function scoreRun(
   if (correct < SPRINT_TARGET) {
     return invalid(`A sprint needs ${SPRINT_TARGET} good lifts to post a time.`);
   }
+  if (playedMs < SPRINT_MIN_TOTAL_MS) {
+    return invalid("That run was faster than humanly possible.");
+  }
   return {
     valid: true,
     score: playedMs,
+    suspicious: machinePaced(answers.slice(0, verdicts.length)),
     correct,
     attempts: verdicts.length,
     accuracy: verdicts.length ? correct / verdicts.length : 0,
