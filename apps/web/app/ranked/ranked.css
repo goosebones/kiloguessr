@@ -138,6 +138,20 @@
   top: 46px;
 }
 
+/* Keeps the answer input in the DOM (and focusable) while the results card is
+   up, so "Play again" can open the phone keyboard from within the tap.
+   Must stay visible to the focus system — no display/visibility none. */
+.console-parked {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .countdown {
   font-family: var(--display);
   font-size: clamp(80px, 22vw, 150px);

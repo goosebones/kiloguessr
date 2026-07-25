@@ -163,8 +163,12 @@ export default function RankedPage() {
     return () => clearInterval(id);
   }, [stage, finish]);
 
-  /** Fetch the run and hold at the "load the bar" screen. */
-  const arm = async (m: RankedMode) => {
+  /**
+   * Fetch a run. By default it holds at the "load the bar" screen; `straight`
+   * (used by Play again) drops into the countdown instead, since that click is
+   * itself the deliberate "I'm ready" tap.
+   */
+  const arm = async (m: RankedMode, straight = false) => {
     setError("");
     setMode(m);
     try {
@@ -188,7 +192,7 @@ export default function RankedPage() {
       setResult(null);
       setClock(clockRef.current);
       setCount(3);
-      setStage("armed");
+      setStage(straight ? "countdown" : "armed");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't start a run.");
     }
@@ -384,7 +388,17 @@ export default function RankedPage() {
                     : "where this run ranks all-time"}
                 </span>
               </div>
-              <button className="check-btn" onClick={() => arm(result.mode!)}>
+              <button
+                className="check-btn"
+                onClick={() => {
+                  // focus inside the tap so mobile opens the keyboard now and
+                  // holds it through the countdown into the first card
+                  if (!isLoadMode(result.mode!)) {
+                    inputRef.current?.focus({ preventScroll: true });
+                  }
+                  arm(result.mode!, true);
+                }}
+              >
                 Play again
               </button>
               <a
@@ -475,11 +489,18 @@ export default function RankedPage() {
         </section>
       )}
 
-      {/* Read-mode input, mounted from arming through play as one element so the
-          keyboard opened on the Load-the-bar tap stays up into the first card. */}
+      {/* Read-mode input, mounted as one element from the results screen through
+          arming and play, so the keyboard opened by a Play again / Load the bar
+          tap stays up into the first card. Parked offscreen while results show. */}
       {!load &&
-        (stage === "armed" || stage === "countdown" || stage === "playing") && (
-          <section className="console" key="read-console">
+        (stage === "done" ||
+          stage === "armed" ||
+          stage === "countdown" ||
+          stage === "playing") && (
+          <section
+            className={`console ${stage === "done" ? "console-parked" : ""}`}
+            key="read-console"
+          >
             <div className="answer-row">
               <div className="answer-field">
                 <input
