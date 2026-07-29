@@ -11,6 +11,7 @@ import {
 } from "@kiloguessr/engine";
 import Footer from "../../components/Footer";
 import InstagramLink from "../../components/InstagramLink";
+import SuspectFlag from "../../components/SuspectFlag";
 import TopNav from "../../components/TopNav";
 import { API_URL } from "../../lib/auth";
 import "../game.css";
@@ -22,6 +23,7 @@ interface Row {
   handle: string;
   instagram: string | null;
   score: number;
+  suspect?: boolean;
 }
 
 export default function LeaderboardsPage() {
@@ -128,6 +130,7 @@ export default function LeaderboardsPage() {
                       <span className="lifter-cell">
                         <a href={`/u/${r.handle}`}>{r.handle}</a>
                         {r.instagram && <InstagramLink name={r.instagram} iconOnly />}
+                        {r.suspect && <SuspectFlag />}
                       </span>
                     </td>
                     <td className="score">{formatScore(mode, r.score)}</td>

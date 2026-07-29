@@ -33,6 +33,9 @@ export const get = async (event: APIGatewayProxyEventV2) => {
       instagram: item.instagram ?? null,
       score: item.score,
       submittedAt: item.submittedAt,
+      // whether the run behind this score was flagged — the reason itself
+      // stays server-side so it can't be used to tune around the check
+      suspect: Boolean(item.suspicious),
     })),
   });
 };

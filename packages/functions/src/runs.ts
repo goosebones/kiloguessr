@@ -209,8 +209,11 @@ export const submit = async (event: APIGatewayProxyEventV2WithJWTAuthorizer) => 
         new UpdateCommand({
           TableName: TABLE,
           Key: { pk: `LBROW#${mode}#${window}`, sk: `USER#${sub}` },
+          // The flag travels with the score it belongs to: a clean run that
+          // takes over the row clears the mark left by an earlier one.
           UpdateExpression:
-            "SET gsi1pk = :gpk, gsi1sk = :gsk, rv = :rv, score = :s, handle = :h, instagram = :ig, submittedAt = :now",
+            "SET gsi1pk = :gpk, gsi1sk = :gsk, rv = :rv, score = :s, handle = :h, instagram = :ig, submittedAt = :now" +
+            (result.suspicious ? ", suspicious = :susp" : " REMOVE suspicious"),
           ConditionExpression: "attribute_not_exists(rv) OR rv < :rv",
           ExpressionAttributeValues: {
             ":gpk": `LB#${mode}#${window}`,
@@ -220,6 +223,7 @@ export const submit = async (event: APIGatewayProxyEventV2WithJWTAuthorizer) => 
             ":h": handle,
             ":ig": (profile?.instagram as string) ?? null,
             ":now": submittedAt,
+            ...(result.suspicious ? { ":susp": result.suspicious } : {}),
           },
         }),
       );

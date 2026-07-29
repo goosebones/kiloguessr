@@ -3,9 +3,13 @@ import type { NextConfig } from "next";
 // 'unsafe-inline' is required for Next's inline hydration scripts and the
 // inline style attributes used throughout the app; connect-src is limited to
 // Cognito and our own API so a future XSS can't exfiltrate the token elsewhere.
+// Next's dev-mode fast refresh compiles with eval(); the deployed policy has
+// no 'unsafe-eval', so without this the dev server can't hydrate any page.
+const dev = process.env.NODE_ENV !== "production";
+
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  `script-src 'self' 'unsafe-inline'${dev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   "font-src 'self'",

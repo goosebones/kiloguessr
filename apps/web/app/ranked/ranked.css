@@ -248,3 +248,43 @@
   overflow-x: auto;
   width: 100%;
 }
+
+/* flagged-score marker in a board row */
+.suspect {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  color: var(--bad);
+  cursor: help;
+  /* a comfortable touch target without pushing the row taller */
+  min-width: 28px;
+  min-height: 28px;
+  justify-content: center;
+  margin: -6px 0;
+}
+.suspect:hover,
+.suspect[aria-expanded="true"] {
+  color: var(--ink);
+}
+.suspect-tip {
+  position: fixed;
+  z-index: 50;
+  width: min(240px, calc(100vw - 24px));
+  transform: translateY(-100%);
+  background: var(--bg);
+  color: var(--ink);
+  border: 1px solid var(--bad);
+  border-radius: 8px;
+  padding: 9px 11px;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: left;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.45);
+  pointer-events: none;
+}
+.suspect-tip.below {
+  transform: none;
+}
