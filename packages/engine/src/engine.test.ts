@@ -71,6 +71,29 @@ describe("generateCard", () => {
     }
   });
 
+  it("keeps every total inside a min/max window", () => {
+    const rng = mulberry32(9);
+    const windowed: GameSettings = { ...S, min: 175, max: 325 };
+    let sawSpread = false;
+    let first: number | null = null;
+    for (let i = 0; i < 500; i++) {
+      const total = totalKg(generateCard(windowed, rng));
+      expect(total).toBeGreaterThanOrEqual(175);
+      expect(total).toBeLessThanOrEqual(325);
+      if (first === null) first = total;
+      else if (total !== first) sawSpread = true;
+    }
+    expect(sawSpread).toBe(true);
+  });
+
+  it("still honours the 10 kg minimum side when min is low or unset", () => {
+    const rng = mulberry32(3);
+    for (const min of [0, 30]) {
+      const c = generateCard({ ...S, min }, rng);
+      expect((c.totalQ - baseQ(S)) / 2).toBeGreaterThanOrEqual(10 * Q);
+    }
+  });
+
   it("is deterministic for a given seed", () => {
     const a = Array.from({ length: 20 }, (_, i) =>
       generateCard(S, mulberry32(7), undefined),

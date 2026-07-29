@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   COLLAR_KG,
   MAXES,
+  MINS,
   PLATES,
   PRACTICE_ENDURANCE,
   Q,
@@ -44,9 +45,13 @@ const DEFAULT_SETTINGS: UiSettings = {
   collars: true,
   smallest: 1.25,
   max: 375,
+  min: 0,
   game: 0,
   timer: 0,
 };
+
+/** The floor options that still leave room under the current ceiling. */
+const minOptions = (max: number) => MINS.filter((m) => m < max);
 
 const MAX_LOADED_PLATES = 14;
 const E = PRACTICE_ENDURANCE;
@@ -66,6 +71,7 @@ function loadSettings(): UiSettings {
         Math.abs(b - s.max) < Math.abs(a - s.max) ? b : a,
       );
     }
+    if (!minOptions(s.max).includes(s.min ?? 0)) s.min = 0;
     return s;
   } catch {
     return DEFAULT_SETTINGS;
@@ -312,6 +318,12 @@ export default function Game() {
 
   const changeSetting = (key: keyof UiSettings, value: number | boolean) => {
     const next = { ...settingsRef.current, [key]: value } as UiSettings;
+    if (key === "max") {
+      // drop the floor back under the new ceiling rather than boxing the
+      // generator into a single achievable weight
+      const allowed = minOptions(next.max);
+      if (!allowed.includes(next.min ?? 0)) next.min = allowed[allowed.length - 1] ?? 0;
+    }
     setSettings(next);
     try {
       localStorage.setItem("kilo.settings", JSON.stringify(next));
@@ -540,6 +552,16 @@ export default function Game() {
             options={MAXES.map((m) => [String(m), m] as [string, number])}
             value={settings.max}
             onChange={(v) => changeSetting("max", v)}
+          />
+        </Setting>
+        <Setting label="Min load">
+          <Seg
+            wrap
+            options={minOptions(settings.max).map(
+              (m) => [m === 0 ? "Any" : String(m), m] as [string, number],
+            )}
+            value={settings.min ?? 0}
+            onChange={(v) => changeSetting("min", v)}
           />
         </Setting>
       </section>

@@ -9,6 +9,8 @@ export interface GameSettings {
   smallest: number;
   /** maximum total in kg */
   max: number;
+  /** minimum total in kg; 0/undefined means "anything the bar can hold" */
+  min?: number;
 }
 
 export interface Card {
@@ -45,7 +47,10 @@ const MIN_SIDE_KG = 10;
 export function generateCard(s: GameSettings, rng: Rng, prev?: Card): Card {
   const base = baseQ(s);
   const stepQ = s.smallest * Q;
-  const loQ = Math.ceil((MIN_SIDE_KG * Q) / stepQ) * stepQ;
+  // A minimum total asks for at least this much per side, but never less than
+  // a bar worth loading at all.
+  const wantedSideQ = Math.max(MIN_SIDE_KG * Q, ((s.min ?? 0) * Q - base) / 2);
+  const loQ = Math.ceil(wantedSideQ / stepQ) * stepQ;
   let hiQ = Math.floor((s.max * Q - base) / 2 / stepQ) * stepQ;
   if (hiQ < loQ) hiQ = loQ;
 

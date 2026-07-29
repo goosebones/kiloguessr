@@ -33,6 +33,9 @@ export const plateByKg = (kg: number): PlateSpec | undefined =>
 /** Max-load options: bar 20 + collars + one more pair of reds per step. */
 export const MAXES = [75, 125, 175, 225, 275, 325, 375, 425, 475, 525];
 
+/** Min-load options: the same ladder, plus 0 for "no floor". */
+export const MINS = [0, ...MAXES.slice(0, -1)];
+
 /** Format a kg value without trailing zeros ("187.5", "61.25", "100"). */
 export const fmt = (kg: number): string =>
   (Math.round(kg * 100) / 100).toString();
