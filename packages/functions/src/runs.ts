@@ -23,8 +23,12 @@ import { TABLE, ddb, json, subOf } from "./lib/db";
 import { RateLimited, checkRunRate } from "./lib/rate";
 
 const RUN_TTL_DAYS = 90;
-/** A run must be submitted within this window of being issued. */
-const RUN_MAX_AGE_MS = 20 * 60 * 1000;
+/**
+ * A run must be submitted within this window of being issued. 500 cards
+ * already took the top lifters 15–17 minutes, so at 1500 the old 20-minute
+ * window would have expired a long run before its last card.
+ */
+const RUN_MAX_AGE_MS = 90 * 60 * 1000;
 /** Slack between claimed play time and wall-clock time (fetch, render, submit). */
 const WALL_CLOCK_SLACK_MS = 5000;
 

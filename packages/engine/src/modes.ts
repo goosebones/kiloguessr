@@ -34,6 +34,7 @@ export const SPRINT_MAX_CARDS = 60;
 /**
  * Cards issued for an endurance run. A strong player nets time on every lift
  * (+2s for a sub-2s answer), so the batch — not the clock — is the real
- * ceiling; keep it far above any human's reach.
+ * ceiling; keep it far above any human's reach. 500 stopped being far enough:
+ * five lifters reached it, one on a perfect 500/500.
  */
-export const ENDURANCE_MAX_CARDS = 500;
+export const ENDURANCE_MAX_CARDS = 1500;
